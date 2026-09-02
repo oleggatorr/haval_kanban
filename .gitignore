@@ -1,0 +1,54 @@
+# === Переменные окружения (НИКОГДА не коммитить секреты) ===
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# === Python / Backend ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+*.whl
+wheels/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.log
+
+# === Node.js / Frontend ===
+node_modules/
+frontend/dist/
+frontend/.vite/
+*.tsbuildinfo
+
+# === Docker ===
+docker-compose.override.yml
+postgres_data/
+
+# === IDE и ОС ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === Логи и загрузки ===
+logs/
+uploads/
+*.log
+
+# === Документация (генерируемая) ===
+site/

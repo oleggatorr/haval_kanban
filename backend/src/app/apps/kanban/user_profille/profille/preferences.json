@@ -1,0 +1,18 @@
+{
+  "ui": {
+    "theme": "dark",          // light, dark, system
+    "language": "ru",         // ru, en, zh
+    "compact_mode": false,    // Уменьшенные карточки
+    "sidebar_collapsed": false
+  },
+  "kanban": {
+    "show_completed_tasks": true,
+    "default_view": "board",  // board, list
+    "card_fields_visible": ["assignee", "priority", "tags"]
+  },
+  "notifications": {
+    "email_enabled": true,
+    "in_app_enabled": true,
+    "mention_only": false     // Уведомлять только при упоминании @
+  }
+}

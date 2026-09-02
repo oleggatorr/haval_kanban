@@ -1,0 +1,77 @@
+services:
+  # === База данных ===
+  db:
+    image: postgres:16-alpine
+    container_name: helpdesk_db
+    restart: unless-stopped
+    environment:
+      # ОБЯЗАТЕЛЬНЫЕ переменные для PostgreSQL
+      POSTGRES_USER: ${DB_USER}        # <--- Берется из корневого .env
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      # Переменные для приложения
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - helpdesk_net
+
+  # === Backend ===
+  backend:
+    build: ./backend
+    container_name: helpdesk_app
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env.docker 
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      CORS_ORIGINS: http://localhost:5173,http://localhost
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - helpdesk_net
+    volumes:
+      - app_logs:/app/logs       # Том app_logs монтируем в папку /app/logs внутри контейнера
+      - app_uploads:/app/uploads # Том app_uploads монтируем в папку /app/uploads внутри контейнера
+
+  # === Frontend ===
+  frontend:
+    build: ./frontend
+    container_name: helpdesk_frontend
+    restart: unless-stopped
+    env_file:
+      - ./frontend/.env
+    environment:
+      VITE_API_URL: http://localhost:8000/api/
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - helpdesk_net
+
+# === ОБЪЯВЛЕНИЕ ТОМОВ ===
+volumes:
+  postgres_data:
+  app_logs:      # Имя должно совпадать с тем, что слева от двоеточия в сервисе backend
+  app_uploads:   # Имя должно совпадать с тем, что слева от двоеточия в сервисе backend
+
+networks:
+  helpdesk_net:
+    driver: bridge

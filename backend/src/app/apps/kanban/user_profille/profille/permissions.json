@@ -1,0 +1,15 @@
+{
+    "system":{
+        "role": "admin",
+        "global_permissions": ["can_create_project", "can_manage_users"]
+    },
+    "projects":[
+        [
+            {
+                "project_id": 1,
+                "role":"",
+                "permissions":[]
+            }
+        ]
+    ]
+}}
