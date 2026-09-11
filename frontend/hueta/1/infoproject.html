@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Проект №2-2394</title>
+    <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="infoproject.css" />
+  </head>
+  <body>
+    <div class="app">
+      <!-- =========================================
+         SIDEBAR
+    ========================================== -->
+      <aside class="sidebar">
+        <div class="logo"><img width="100%" src="logo.png" /></div>
+        <nav class="nav">
+          <a class="active" href="#">
+            <iconify-icon class="icon" icon="solar:folder-with-files-outline"></iconify-icon>
+            <span>Проекты</span>
+            <span class="nav-counter">3</span>
+          </a>
+          <a href="#">
+            <iconify-icon class="icon" icon="solar:checklist-minimalistic-outline"></iconify-icon>
+            <span>Мои задачи</span>
+            <span class="nav-counter">15</span>
+          </a>
+          <a href="#">
+            <iconify-icon class="icon" icon="solar:kanban-board-outline"></iconify-icon>
+            <span>Канбан</span>
+          </a>
+          <a href="#">
+            <iconify-icon class="icon" icon="solar:calendar-outline"></iconify-icon>
+            <span>Календарь</span>
+          </a>
+          <a href="#">
+            <iconify-icon class="icon" icon="solar:chart-2-outline"></iconify-icon>
+            <span>Отчёты</span>
+          </a>
+          <a href="#">
+            <iconify-icon class="icon" icon="solar:settings-outline"></iconify-icon>
+            <span>Настройки</span>
+          </a>
+        </nav>
+        <div class="sidebar-user">
+          <div class="avatar">
+            <img src="https://i.pravatar.cc/100?img=12" alt="" />
+          </div>
+          <div class="user-meta">
+            Иван Петров
+            <small>Frontend Developer</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- =========================================
+         MAIN
+    ========================================== -->
+      <main class="main">
+        <!-- TOPBAR -->
+        <header class="topbar">
+          <div class="search-wrap">
+            <iconify-icon icon="solar:magnifer-outline"></iconify-icon>
+            <input class="search" placeholder="Поиск задач, проектов..." />
+          </div>
+          <button class="icon-btn" aria-label="Уведомления">
+            <iconify-icon icon="solar:bell-outline"></iconify-icon>
+          </button>
+          <button class="icon-btn" aria-label="Приложения">
+            <iconify-icon icon="solar:widget-2-outline"></iconify-icon>
+          </button>
+          <div class="profile">
+            <img src="https://i.pravatar.cc/100?img=12" alt="" />
+          </div>
+        </header>
+
+        <section class="content">
+          <!-- PROJECT HEADER -->
+          <div class="project-head">
+            <div>
+              <a href="#" class="crumb">
+                <iconify-icon icon="solar:arrow-left-outline"></iconify-icon>
+                Назад к проектам
+              </a>
+              <h1>
+                Проект №2-2394
+                <span
+                  style="
+                    font-size: 11px;
+                    background: #e7f5ff;
+                    color: #168be5;
+                    padding: 5px 9px;
+                    border-radius: 20px;
+                    vertical-align: middle;
+                  "
+                  >В работе</span
+                >
+              </h1>
+              <div class="subtitle">Разработка системы автоматизации производства</div>
+            </div>
+            <div class="head-actions">
+              <button class="btn">
+                <iconify-icon icon="solar:pen-outline"></iconify-icon>
+                Редактировать
+              </button>
+              <button class="btn btn-more" aria-label="Дополнительно">
+                <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+              </button>
+              <button class="btn primary">
+                <iconify-icon icon="solar:add-circle-outline"></iconify-icon>
+                Добавить задачу
+              </button>
+            </div>
+          </div>
+
+          <!-- META -->
+          <section class="project-meta">
+            <div class="meta-item">
+              <iconify-icon class="meta-icon" icon="solar:calendar-outline"></iconify-icon>
+              <div class="meta-content">
+                <div class="meta-value">10.01.2026 – 25.10.2026</div>
+                <div class="meta-label">Срок выполнения</div>
+              </div>
+            </div>
+            <div class="meta-item">
+              <iconify-icon class="meta-icon" icon="solar:database-outline"></iconify-icon>
+              <div class="meta-content">
+                <div class="meta-value">2 652 000 ₽</div>
+                <div class="meta-label">Затраты на разработку</div>
+              </div>
+            </div>
+            <div class="meta-item">
+              <iconify-icon
+                class="meta-icon"
+                icon="solar:users-group-rounded-outline"
+              ></iconify-icon>
+              <div class="meta-content">
+                <div class="meta-value">5</div>
+                <div class="meta-label">Исполнители</div>
+              </div>
+            </div>
+            <div class="meta-item">
+              <iconify-icon class="meta-icon" icon="solar:user-outline"></iconify-icon>
+              <div class="meta-content">
+                <div class="meta-value">Иванов А.С.</div>
+                <div class="meta-label">Инициатор</div>
+              </div>
+            </div>
+            <div class="meta-item">
+              <iconify-icon class="meta-icon" icon="solar:user-check-outline"></iconify-icon>
+              <div class="meta-content">
+                <div class="meta-value">Петров И.В.</div>
+                <div class="meta-label">Менеджер проекта</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- TABS -->
+          <div class="tabs">
+            <a href="#" class="tab active">Обзор</a>
+            <a href="#" class="tab">Задачи <span class="tab-count">20</span></a>
+            <a href="#" class="tab">Документация <span class="tab-count">5</span></a>
+            <a href="#" class="tab">Затраты</a>
+            <a href="#" class="tab">Команда</a>
+            <a href="#" class="tab">История</a>
+          </div>
+
+          <!-- CONTENT GRID -->
+          <div class="content-grid">
+            <!-- LEFT -->
+            <div class="left-column">
+              <!-- DESCRIPTION -->
+              <section class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:document-text-outline"></iconify-icon>
+                    Описание проекта
+                  </div>
+                  <div class="card-edit">
+                    <iconify-icon icon="solar:pen-outline"></iconify-icon>
+                    Редактировать
+                  </div>
+                </div>
+                <div class="description">
+                  <p>
+                    Разработка системы автоматизации производства, которая позволит оптимизировать
+                    производственные процессы, сократить время на выполнение операций и повысить
+                    точность планирования. Система будет интегрирована с существующими модулями и
+                    предоставит удобный интерфейс для сотрудников цехов и менеджеров.
+                  </p>
+                </div>
+              </section>
+
+              <!-- DOCUMENTATION -->
+              <section class="card">
+                <div class="card-header docs-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                    Документация
+                  </div>
+                  <button class="upload-btn">
+                    <iconify-icon icon="solar:upload-outline"></iconify-icon>
+                    Загрузить файл
+                  </button>
+                </div>
+                <div class="documents">
+                  <div class="doc-row header">
+                    <div>Название</div>
+                    <div>Тип</div>
+                    <div>Размер</div>
+                    <div class="hide-mobile">Дата загрузки</div>
+                    <div class="hide-mobile">Автор</div>
+                    <div></div>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-name">
+                      <div class="file-icon file-pdf">
+                        <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                      </div>
+                      <span>Техническое задание.pdf</span>
+                    </div>
+                    <div class="doc-cell">ТЗ</div>
+                    <div class="doc-cell">2.4 МБ</div>
+                    <div class="doc-cell hide-mobile">10.01.2026 14:32</div>
+                    <div class="doc-cell hide-mobile">Иванов А.С.</div>
+                    <iconify-icon class="doc-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-name">
+                      <div class="file-icon file-word">
+                        <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                      </div>
+                      <span>Архитектура системы.docx</span>
+                    </div>
+                    <div class="doc-cell">Документация</div>
+                    <div class="doc-cell">1.8 МБ</div>
+                    <div class="doc-cell hide-mobile">12.01.2026 09:15</div>
+                    <div class="doc-cell hide-mobile">Петров И.В.</div>
+                    <iconify-icon class="doc-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-name">
+                      <div class="file-icon file-excel">
+                        <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                      </div>
+                      <span>План-график реализации.xlsx</span>
+                    </div>
+                    <div class="doc-cell">План</div>
+                    <div class="doc-cell">320 КБ</div>
+                    <div class="doc-cell hide-mobile">13.01.2026 16:24</div>
+                    <div class="doc-cell hide-mobile">Сидоров Д.В.</div>
+                    <iconify-icon class="doc-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-name">
+                      <div class="file-icon file-pdf">
+                        <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                      </div>
+                      <span>Договор №2-2394.pdf</span>
+                    </div>
+                    <div class="doc-cell">Договор</div>
+                    <div class="doc-cell">1.1 МБ</div>
+                    <div class="doc-cell hide-mobile">15.01.2026 11:03</div>
+                    <div class="doc-cell hide-mobile">Иванов А.С.</div>
+                    <iconify-icon class="doc-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="doc-row">
+                    <div class="doc-name">
+                      <div class="file-icon file-word">
+                        <iconify-icon icon="solar:file-text-outline"></iconify-icon>
+                      </div>
+                      <span>Протокол совещания.docx</span>
+                    </div>
+                    <div class="doc-cell">Прочее</div>
+                    <div class="doc-cell">856 КБ</div>
+                    <div class="doc-cell hide-mobile">18.01.2026 15:47</div>
+                    <div class="doc-cell hide-mobile">Петров И.В.</div>
+                    <iconify-icon class="doc-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                </div>
+              </section>
+
+              <!-- COSTS -->
+              <section class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:wallet-money-outline"></iconify-icon>
+                    Затраты
+                  </div>
+                  <div class="card-edit">
+                    <iconify-icon icon="solar:pen-outline"></iconify-icon>
+                    Редактировать
+                  </div>
+                </div>
+                <div class="costs-content">
+                  <div class="total-cost">
+                    <div class="total-label">Общие затраты</div>
+                    <div class="total-value">2 652 000 ₽</div>
+                  </div>
+                  <div class="cost-chart">
+                    <div class="bar">
+                      <div class="bar-part bar-development"></div>
+                      <div class="bar-part bar-testing"></div>
+                      <div class="bar-part bar-implementation"></div>
+                      <div class="bar-part bar-other"></div>
+                    </div>
+                    <div class="cost-list">
+                      <div class="cost-row">
+                        <div class="cost-name">
+                          <span class="cost-dot dot-blue"></span>
+                          Разработка
+                        </div>
+                        <div class="cost-amount">1 850 000 ₽</div>
+                      </div>
+                      <div class="cost-row">
+                        <div class="cost-name">
+                          <span class="cost-dot dot-green"></span>
+                          Тестирование
+                        </div>
+                        <div class="cost-amount">450 000 ₽</div>
+                      </div>
+                      <div class="cost-row">
+                        <div class="cost-name">
+                          <span class="cost-dot dot-green2"></span>
+                          Внедрение
+                        </div>
+                        <div class="cost-amount">250 000 ₽</div>
+                      </div>
+                      <div class="cost-row">
+                        <div class="cost-name">
+                          <span class="cost-dot dot-purple"></span>
+                          Прочее
+                        </div>
+                        <div class="cost-amount">102 000 ₽</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+
+            <!-- RIGHT -->
+            <aside class="right-column">
+              <!-- TEAM -->
+              <section class="card right-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:users-group-rounded-outline"></iconify-icon>
+                    Участники проекта
+                  </div>
+                </div>
+                <div class="team-list">
+                  <div class="team-member">
+                    <div class="team-avatar">
+                      <img src="https://i.pravatar.cc/100?img=47" alt="" />
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">Иванов Александр Сергеевич</div>
+                      <div class="member-role">Инициатор</div>
+                    </div>
+                    <span class="member-badge">Инициатор</span>
+                    <iconify-icon class="member-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="team-member">
+                    <div class="team-avatar">
+                      <img src="https://i.pravatar.cc/100?img=11" alt="" />
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">Петров Иван Владимирович</div>
+                      <div class="member-role">Менеджер проекта</div>
+                    </div>
+                    <span class="member-badge">Менеджер</span>
+                    <iconify-icon class="member-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="team-member">
+                    <div class="team-avatar">
+                      <img src="https://i.pravatar.cc/100?img=13" alt="" />
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">Смирнов Алексей Викторович</div>
+                      <div class="member-role">Разработчик</div>
+                    </div>
+                    <span class="member-badge green">Исполнитель</span>
+                    <iconify-icon class="member-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="team-member">
+                    <div class="team-avatar">
+                      <img src="https://i.pravatar.cc/100?img=32" alt="" />
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">Кузнецова Мария Сергеевна</div>
+                      <div class="member-role">Тестировщик</div>
+                    </div>
+                    <span class="member-badge green">Исполнитель</span>
+                    <iconify-icon class="member-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="team-member">
+                    <div class="team-avatar">
+                      <img src="https://i.pravatar.cc/100?img=68" alt="" />
+                    </div>
+                    <div class="member-info">
+                      <div class="member-name">Васильев Дмитрий Николаевич</div>
+                      <div class="member-role">Разработчик</div>
+                    </div>
+                    <span class="member-badge green">Исполнитель</span>
+                    <iconify-icon class="member-more" icon="solar:menu-dots-outline"></iconify-icon>
+                  </div>
+                  <div class="add-member">
+                    <iconify-icon icon="solar:add-circle-outline"></iconify-icon>
+                    Добавить участника
+                  </div>
+                </div>
+              </section>
+
+              <!-- DEADLINE -->
+              <section class="card right-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:calendar-outline"></iconify-icon>
+                    Сроки и статус
+                  </div>
+                </div>
+                <div class="deadline-content">
+                  <div class="progress-top">
+                    <div class="progress" style="width: 100%">
+                      <div class="progress-value"></div>
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      justify-content: flex-end;
+                      margin-top: -25px;
+                      margin-bottom: 10px;
+                    "
+                  >
+                    <span class="progress-percent">58%</span>
+                  </div>
+                  <div class="deadline-info">
+                    <div class="deadline-item">
+                      <div class="deadline-label">Начало</div>
+                      <div class="deadline-value">10.01.2026</div>
+                    </div>
+                    <div class="deadline-item">
+                      <div class="deadline-label">Окончание</div>
+                      <div class="deadline-value">25.10.2026</div>
+                    </div>
+                    <div class="deadline-item">
+                      <div class="deadline-label">Осталось</div>
+                      <div class="deadline-value">84 дня</div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <!-- QUICK ACTIONS -->
+              <section class="card right-card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <iconify-icon icon="solar:bolt-outline"></iconify-icon>
+                    Быстрые действия
+                  </div>
+                </div>
+                <div class="quick-list">
+                  <div class="quick-item">
+                    <iconify-icon icon="solar:refresh-outline"></iconify-icon>
+                    Изменить статус проекта
+                    <iconify-icon
+                      class="quick-arrow"
+                      icon="solar:alt-arrow-right-outline"
+                    ></iconify-icon>
+                  </div>
+                  <div class="quick-item">
+                    <iconify-icon icon="solar:add-circle-outline"></iconify-icon>
+                    Добавить задачу
+                    <iconify-icon
+                      class="quick-arrow"
+                      icon="solar:alt-arrow-right-outline"
+                    ></iconify-icon>
+                  </div>
+                  <div class="quick-item">
+                    <iconify-icon icon="solar:upload-outline"></iconify-icon>
+                    Загрузить документацию
+                    <iconify-icon
+                      class="quick-arrow"
+                      icon="solar:alt-arrow-right-outline"
+                    ></iconify-icon>
+                  </div>
+                  <div class="quick-item">
+                    <iconify-icon icon="solar:wallet-money-outline"></iconify-icon>
+                    Добавить затраты
+                    <iconify-icon
+                      class="quick-arrow"
+                      icon="solar:alt-arrow-right-outline"
+                    ></iconify-icon>
+                  </div>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

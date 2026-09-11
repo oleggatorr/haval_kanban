@@ -1,150 +1,164 @@
-<!-- src/components/AppHeader.vue -->
+<!-- src/components/layout/AppHeader.vue -->
 <template>
   <header class="app-header">
     <div class="header-container">
-      <!-- Левая часть: Логотип + Навигация -->
+      <!-- Левая часть: Лого + Навигация -->
       <div class="header-left">
         <router-link to="/" class="logo-link" title="На главную">
-          <img
-            src="@/assets/images/logo_5.png"
-            alt="Logo"
-            class="logo"
-            @error="$event.target.style.display = 'none'"
-          />
-          <span class="logo-text">Кабан🐗</span>
+          <div class="logo-wrapper">
+            <img
+              src="@/assets/images/logo_5.png"
+              alt="Logo"
+              class="logo-img"
+              @error="$event.target.style.display = 'none'"
+            />
+          </div>
+          <span class="logo-text">Кабан<span class="logo-accent">🐗</span></span>
         </router-link>
 
-        <!-- Десктопная навигация -->
-        <nav v-if="authStore.isAuthenticated" class="desktop-nav">
-          <router-link to="/projects" class="nav-link" active-class="active">
-            📁 Проекты
+        <nav v-if="authStore.isAuthenticated" class="main-nav">
+          <router-link
+            v-for="item in navItems"
+            :key="item.to"
+            :to="item.to"
+            class="nav-item"
+            active-class="active"
+          >
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-label">{{ item.label }}</span>
           </router-link>
-          <router-link to="/tasks" class="nav-link" active-class="active"> ✅ Задачи </router-link>
         </nav>
       </div>
 
-      <!-- Правая часть: Уведомления + Язык + Профиль -->
+      <!-- Правая часть: Действия + Профиль -->
       <div class="header-right">
-        <!-- Кнопка уведомлений (пока заглушка) -->
-        <ActionButton
+        <!-- Поиск (заглушка) -->
+        <button class="icon-btn" title="Поиск">
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+
+        <!-- Уведомления -->
+        <button
           v-if="authStore.isAuthenticated"
-          icon="🔔"
-          :tooltip="`${unreadCount} непрочитанных`"
-          class="notification-btn"
+          class="icon-btn notification-btn"
+          title="Уведомления"
           @click="handleNotifications"
         >
-          <span v-if="unreadCount > 0" class="badge">{{ unreadCount }}</span>
-        </ActionButton>
-
-        <!-- Переключатель языка -->
-        <div class="lang-switcher">
-          <button
-            :class="['lang-btn', { active: currentLang === 'ru' }]"
-            @click="changeLang('ru')"
-            title="Русский"
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
           >
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <transition name="pop">
+            <span v-if="unreadCount > 0" class="badge">{{
+              unreadCount > 9 ? '9+' : unreadCount
+            }}</span>
+          </transition>
+        </button>
+
+        <!-- Язык -->
+        <div class="lang-switcher">
+          <button :class="['lang-btn', { active: currentLang === 'ru' }]" @click="changeLang('ru')">
             RU
           </button>
-          <button
-            :class="['lang-btn', { active: currentLang === 'en' }]"
-            @click="changeLang('en')"
-            title="English"
-          >
+          <button :class="['lang-btn', { active: currentLang === 'en' }]" @click="changeLang('en')">
             EN
           </button>
         </div>
 
-        <!-- Разделитель -->
         <div v-if="authStore.isAuthenticated" class="divider"></div>
 
-        <!-- Секция пользователя -->
+        <!-- Профиль -->
         <div v-if="authStore.isAuthenticated" class="user-section">
-          <!-- Кнопка профиля с BurgerMenu -->
-          <BurgerMenu
-            :items="userMenuItems"
-            placement="bottom-end"
-            :title="authStore.user?.login || 'Профиль'"
-          >
+          <BurgerMenu :items="userMenuItems" placement="bottom-end" :offset="8">
             <template #default="{ toggle }">
-              <button class="user-btn" @click="toggle">
-                <div class="user-avatar">
+              <button class="user-trigger" @click="toggle">
+                <div class="avatar">
                   {{ getUserInitials }}
                 </div>
-                <div class="user-info">
-                  <span class="user-name">{{ authStore.user?.login }}</span>
-                  <span class="user-role" :class="authStore.user?.role">
+                <div class="user-meta">
+                  <span class="username">{{ authStore.user?.login }}</span>
+                  <span class="role-tag" :class="authStore.user?.role">
                     {{ getRoleLabel(authStore.user?.role) }}
                   </span>
                 </div>
-                <span class="dropdown-arrow">▼</span>
+                <svg
+                  class="chevron"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  fill="none"
+                >
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
               </button>
             </template>
           </BurgerMenu>
         </div>
 
-        <!-- Кнопка входа для неавторизованных -->
-        <router-link v-else to="/login" class="btn-login"> 🔑 Войти </router-link>
+        <!-- Вход -->
+        <router-link v-else to="/login" class="login-btn"> Войти </router-link>
       </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import ActionButton from '@/components/ui/ActionButton.vue'
 import BurgerMenu from '@/components/ui/BurgerMenu.vue'
 import type { MenuItem } from '@/components/ui/BurgerMenu.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-// Состояния
 const currentLang = ref('ru')
 const unreadCount = ref(0)
 
-// Вычисляемые свойства
+// Конфигурация навигации для удобства поддержки
+const navItems = [
+  { to: '/projects', label: 'Проекты', icon: '▦' },
+  { to: '/tasks', label: 'Задачи', icon: '✓' },
+]
+
 const getUserInitials = computed(() => {
   const login = authStore.user?.login || ''
   return login.substring(0, 2).toUpperCase()
 })
 
-// Элементы меню пользователя
 const userMenuItems = computed<MenuItem[]>(() => [
-  {
-    id: 'profile',
-    label: '👤 Профиль',
-    action: () => router.push('/profile'),
-  },
-  {
-    id: 'settings',
-    label: '⚙️ Настройки',
-    action: () => router.push('/settings'),
-  },
-  {
-    id: 'divider',
-    label: '---',
-    disabled: true,
-  },
-  {
-    id: 'logout',
-    label: '🚪 Выйти',
-    action: handleLogout,
-    danger: true,
-  },
+  { id: 'profile', label: '👤 Профиль', action: () => router.push('/profile') },
+  { id: 'settings', label: '⚙️ Настройки', action: () => router.push('/settings') },
+  { id: 'divider', label: '---', disabled: true },
+  { id: 'logout', label: '🚪 Выйти', action: handleLogout, danger: true },
 ])
 
-// Функции
 const changeLang = (lang: string) => {
   currentLang.value = lang
-  console.log(`Язык изменен на: ${lang}`)
-  // TODO: Интеграция с i18n
+  // TODO: Интеграция i18n
 }
 
 const handleNotifications = () => {
-  console.log('Открыть уведомления')
-  // TODO: Открыть панель уведомлений
+  console.log('Open notifications panel')
 }
 
 const handleLogout = async () => {
@@ -153,339 +167,360 @@ const handleLogout = async () => {
 }
 
 const getRoleLabel = (role?: string) => {
-  if (!role) return 'Гость'
-  const roles: Record<string, string> = {
+  const map: Record<string, string> = {
     admin: 'Админ',
     operator: 'Оператор',
     manager: 'Менеджер',
     user: 'Пользователь',
   }
-  return roles[role] || role
+  return role ? map[role] || role : 'Гость'
 }
 
-// Инициализация при монтировании
-onMounted(() => {
-  // Здесь можно загрузить количество непрочитанных уведомлений
-  // unreadCount.value = await fetchUnreadCount()
+onMounted(async () => {
+  // TODO: Загрузка счетчика уведомлений
 })
 </script>
 
 <style scoped>
+/* =========================================
+   BASE & VARIABLES
+========================================= */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  backdrop-filter: blur(10px);
+  padding: 12px 24px;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+
+  /* Glassmorphism Background */
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .header-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 0.75rem 2rem;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
+  justify-content: space-between;
+  gap: 24px;
 }
 
-/* Левая часть */
+/* =========================================
+   LEFT: LOGO & NAV
+========================================= */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 32px;
 }
 
 .logo-link {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
   text-decoration: none;
   color: white;
-  transition: all 0.3s ease;
-  padding: 0.5rem;
-  border-radius: 12px;
+  transition: opacity 0.2s ease;
 }
 
 .logo-link:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
+  opacity: 0.9;
 }
 
-.logo {
-  height: 45px;
-  width: auto;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+.logo-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+}
+
+.logo-img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .logo-text {
-  font-size: 1.4rem;
-  font-weight: 800;
-  letter-spacing: 1px;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-/* Десктопная навигация */
-.desktop-nav {
+.logo-accent {
+  margin-left: 2px;
+  font-size: 16px;
+}
+
+.main-nav {
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.nav-link {
-  color: rgba(255, 255, 255, 0.9);
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  position: relative;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
-.nav-link:hover {
-  background: rgba(255, 255, 255, 0.2);
+.nav-item:hover {
   color: white;
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.nav-link.active {
-  background: rgba(255, 255, 255, 0.25);
+.nav-item.active {
   color: white;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.nav-link.active::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 3px;
-  background: white;
-  border-radius: 2px;
+.nav-icon {
+  font-size: 14px;
+  opacity: 0.9;
 }
 
-/* Правая часть */
+/* =========================================
+   RIGHT: ACTIONS & USER
+========================================= */
 .header-right {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 12px;
 }
 
-/* Кнопка уведомлений */
-.notification-btn {
+.icon-btn {
   position: relative;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.6rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1.2rem;
+  transition: all 0.2s ease;
 }
 
-.notification-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .badge {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: 4px;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
   background: #ff4757;
   color: white;
-  font-size: 0.7rem;
+  font-size: 10px;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
-  border-radius: 10px;
-  min-width: 18px;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(255, 71, 87, 0.4);
-}
-
-/* Переключатель языка */
-.lang-switcher {
-  display: flex;
-  gap: 0.25rem;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.25rem;
-  border-radius: 8px;
-}
-
-.lang-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 255, 255, 0.8);
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.lang-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-}
-
-.lang-btn.active {
-  background: white;
-  color: #667eea;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-/* Разделитель */
-.divider {
-  width: 1px;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* Секция пользователя */
-.user-section {
-  position: relative;
-}
-
-.user-btn {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  transition: all 0.3s ease;
-  white-space: nowrap;
-}
-
-.user-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.user-avatar {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(15, 23, 42, 0.8); /* Match header bg roughly */
 }
 
-.user-info {
+/* Language Switcher */
+.lang-switcher {
+  display: flex;
+  align-items: center;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lang-btn {
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lang-btn.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 4px;
+}
+
+/* User Trigger */
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 4px 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.user-trigger:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.user-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  align-items: flex-start;
+  gap: 1px;
 }
 
-.user-name {
-  font-weight: 700;
-  font-size: 0.95rem;
-  color: white;
-}
-
-.user-role {
-  font-size: 0.75rem;
+.username {
+  font-size: 12px;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
-  border-radius: 8px;
-  display: inline-block;
+  line-height: 1.2;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.user-role.admin {
-  background: rgba(255, 71, 87, 0.3);
-  color: #ffe0e0;
+.role-tag {
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  opacity: 0.6;
 }
 
-.user-role.operator {
-  background: rgba(46, 213, 115, 0.3);
-  color: #d4ffd4;
+.chevron {
+  opacity: 0.5;
+  margin-left: 2px;
+  transition: transform 0.2s ease;
 }
 
-.user-role.manager {
-  background: rgba(255, 165, 2, 0.3);
-  color: #fff3d4;
+.user-trigger:hover .chevron {
+  opacity: 0.8;
 }
 
-.user-role.user {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
-}
-
-.dropdown-arrow {
-  font-size: 0.7rem;
-  opacity: 0.7;
-  transition: transform 0.3s ease;
-}
-
-.user-btn:hover .dropdown-arrow {
-  transform: rotate(180deg);
-}
-
-/* Кнопка входа */
-.btn-login {
-  background: white;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: #667eea;
-  padding: 0.6rem 1.5rem;
+/* Login Button */
+.login-btn {
+  padding: 8px 16px;
   border-radius: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
   text-decoration: none;
-  font-size: 0.95rem;
-  font-weight: 700;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
 }
 
-.btn-login:hover {
-  background: rgba(255, 255, 255, 0.95);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.login-btn:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
 }
 
-/* Адаптивность */
+/* =========================================
+   ANIMATIONS
+========================================= */
+.pop-enter-active,
+.pop-leave-active {
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pop-enter-from,
+.pop-leave-to {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
 @media (max-width: 1024px) {
-  .desktop-nav {
+  .main-nav {
+    display: none; /* На планшетах скрываем меню, можно добавить бургер */
+  }
+
+  .user-meta {
     display: none;
   }
 
-  .header-container {
-    padding: 0.75rem 1rem;
+  .chevron {
+    display: none;
+  }
+
+  .user-trigger {
+    padding: 4px;
+    border: none;
+    background: transparent;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-header {
+    padding: 12px 16px;
   }
 
   .logo-text {
     display: none;
   }
-}
 
-@media (max-width: 768px) {
-  .user-info {
+  .lang-switcher {
     display: none;
   }
 
-  .user-btn {
-    padding: 0.5rem;
-  }
-
-  .lang-switcher {
+  .divider {
     display: none;
   }
 }

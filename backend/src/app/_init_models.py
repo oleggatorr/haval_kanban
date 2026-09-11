@@ -14,6 +14,10 @@
 # from src.app.kanban._04_task.models import Task
 # from src.app.kanban._05_sub_task.models import Sub_Task
 
-from src.app.user_auth.users.models import AuthUser
 
-from .apps.kanban.__init__models import *
+
+# from .apps.kanban.__init__models import *
+
+
+from src.app.user_auth.users.models import AuthUser
+from .apps.kanban2.models._init_models import *

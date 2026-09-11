@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from src.core.database.connection import get_db
-from .schemas import TaskCreate, TaskUpdate, TaskResponse, Task_deep_Response
+from .schemas import TaskCreate, TaskUpdate, TaskResponse, Task_deep_Response, TaskMove
 from .services import TaskService
 
 router = APIRouter(
@@ -219,3 +219,18 @@ async def reorder_tasks(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
+
+@router.patch("/{task_id}/move")
+async def move_task(
+    task_id: int,
+    new_column: TaskMove,
+    db: AsyncSession = Depends(get_db)
+):
+    task_service = TaskService(db)
+    try:
+        task = await task_service.move_task_to_column(task_id, new_column)
+        if not task:
+            raise HTTPException(status_code=404, detail="Задача не найдена")
+        return task
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))

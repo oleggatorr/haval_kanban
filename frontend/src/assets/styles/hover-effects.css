@@ -1,0 +1,61 @@
+/* =========================================
+   HOVER UTILITIES
+========================================= */
+
+.hover-lift {
+  transition: transform var(--transition-fast, 0.2s) ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.hover-lift-strong {
+  transition: transform var(--transition-fast, 0.2s) ease;
+}
+
+.hover-lift-strong:hover {
+  transform: translateY(-3px);
+}
+
+.hover-scale {
+  transition: transform var(--transition-fast, 0.2s) ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.1);
+}
+
+.hover-scale-icon {
+  transition: transform var(--transition-fast, 0.2s) ease;
+}
+
+.hover-scale-icon:hover {
+  transform: scale(1.15);
+}
+
+.hover-glow {
+  transition: all var(--transition-medium, 0.3s) ease;
+}
+
+.hover-glow:hover {
+  box-shadow: 0 6px 16px rgba(20, 30, 70, 0.2);
+}
+
+.hover-brighten {
+  transition: color var(--transition-fast, 0.2s) ease;
+}
+
+.hover-brighten:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+/* Glass hover effect */
+.glass-hover {
+  transition: all var(--transition-medium, 0.3s) ease;
+}
+
+.glass-hover:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.25);
+}

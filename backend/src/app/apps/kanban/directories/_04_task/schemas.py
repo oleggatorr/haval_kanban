@@ -29,6 +29,9 @@ class TaskUpdate(TaskBase):
     """Схема для обновления задачи"""
     assignee_ids: Optional[List[str]] = None
 
+class TaskMove(TaskBase):
+    """Схема запроса для переноса задачи в другую колонку"""
+    new_column_id: int = Field(..., description="ID новой колонки",gt=0)
 
 class TaskResponse(TaskBase):
     """Схема ответа с данными задачи"""

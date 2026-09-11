@@ -23,5 +23,8 @@ class Sub_Task(Base):
     tasks_id = Column(Integer, ForeignKey("task.id", ondelete="CASCADE"), nullable=False)
     name = Column(String(100), nullable=True)
     order_id = Column(Integer, nullable=True)
+    # TODO:
+    # Описание подзадачи
+    # статус
 
     task = relationship("Task", back_populates="sub_tasks")

@@ -13,7 +13,7 @@ from .._03_column.services import ColumnService
 from src.app.apps.kanban.user_profille.profille.profille_models import UserProfile 
 from src.app.apps.kanban.user_profille.profille.profille_services import UserService
 
-from .schemas import TaskCreate, TaskUpdate, TaskResponse, AssigneeInfo, Task_deep_Response
+from .schemas import TaskCreate, TaskUpdate, TaskResponse, AssigneeInfo, Task_deep_Response, TaskMove
 
 
 class TaskService:
@@ -515,3 +515,55 @@ class TaskService:
             await self._touch_column(column_id)
         
         return [await self._get_task_with_assignees(task.id) for task in tasks]
+    
+    
+    async def move_task_to_column(self, task_id: int, new_column: TaskMove) -> Optional[TaskResponse]:
+        """
+        Перенос задачи в другую колонку
+        
+        Args:
+            task_id: ID задачи
+            new_column_id: ID новой колонки
+            
+        Returns:
+            Обновленная задача или None если задача не найдена
+            
+        Raises:
+            ValueError: Если новая колонка не существует
+        """
+        new_column_id = new_column.new_column_id
+        
+        # Проверяем существование новой колонки
+        if not await self._check_column_exists(new_column_id):
+            raise ValueError(f"Колонка с ID {new_column_id} не существует")
+        
+        # Получаем задачу
+        result = await self.db.execute(select(Task).where(Task.id == task_id))
+        task = result.scalar_one_or_none()
+        
+        if not task:
+            return None
+        
+        old_column_id = task.column_id
+        
+        # Если задача уже в нужной колонке, просто возвращаем её
+        if task.column_id == new_column_id:
+            return await self._get_task_with_assignees(task_id)
+        
+        # Меняем колонку задачи
+        task.column_id = new_column_id
+        
+        # Сбрасываем order_id - будет нормализован позже
+        task.order_id = None
+        
+        await self.db.commit()
+        
+        # Нормализуем порядки в старой и новой колонках
+        await self.normalize_task_orders(old_column_id)
+        await self.normalize_task_orders(new_column_id)
+        
+        # Обновляем обе колонки
+        await self._touch_column(old_column_id)
+        await self._touch_column(new_column_id)
+        
+        return await self._get_task_with_assignees(task_id)

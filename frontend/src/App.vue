@@ -8,17 +8,17 @@ import '@/assets/styles/main.css'
 </script>
 
 <template>
-  <div id="app-container">
-    <!-- Шапка -->
-    <AppHeader />
+  <!-- <div id="app-container"> -->
+  <!-- Шапка -->
+  <!-- <AppHeader /> -->
 
-    <!-- Основной контент -->
-    <main class="content-wrapper">
-      <RouterView v-slot="{ Component }">
-        <component :is="Component" :key="$route.fullPath" />
-      </RouterView>
-    </main>
-  </div>
+  <!-- Основной контент -->
+  <!-- <main class="content-wrapper"> -->
+  <RouterView v-slot="{ Component }">
+    <component :is="Component" :key="$route.fullPath" />
+  </RouterView>
+  <!-- </main> -->
+  <!-- </div> -->
 </template>
 
 <style>
@@ -35,7 +35,7 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-image: url('@/assets/images/bg.jpg');
+  background-image: url('@/assets/images/3xNT8aTLIlNOtrcptECM8tefiw.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -48,8 +48,8 @@ body {
   padding: 2rem;
   position: relative;
   z-index: 1;
-  margin-left: 70px;
-  margin-right: 70px;
+  /* margin-left: 70px;
+  margin-right: 70px; */
   margin-top: 10px;
   transition: margin-left 0.3s ease;
 }

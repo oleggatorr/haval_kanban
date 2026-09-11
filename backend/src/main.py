@@ -25,7 +25,9 @@ from src.app.zup.zup_routes import register_zup_routers, zup_app
 
 from src.app.user_auth.user_auth_routes import register_auth, base_users_app
 
-from src.app.apps.kanban.init_routes import register_kanban_routes, kanban_app
+# from src.app.apps.kanban.init_routes import register_kanban_routes, kanban_app
+
+from src.app.apps.kanban2.routes._init_routes import register_kanban2_routes, kanban2_app
 
 
 import src.app._init_models
@@ -48,10 +50,10 @@ app = FastAPI(
 app.mount("/zup", zup_app)
 
 # register_kanban_routes(app)
-app.mount("/kanban", kanban_app)
+app.mount("/kanban", kanban2_app)
 
 
-register_auth(app)
+# register_auth(app)
 # app.mount("/user",base_users_app)
 
 app.add_middleware(LoggingMiddleware)

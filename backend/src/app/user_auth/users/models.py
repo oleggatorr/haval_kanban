@@ -23,10 +23,10 @@ class AuthUser(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Связь с профилем пользователя (один-к-одному)
-    profile = relationship(
-        "UserProfile", 
-        back_populates="auth_user",
-        uselist=False,  # Указывает, что это один-к-одному
-        cascade="all, delete-orphan"  # При удалении AuthUser удаляется и профиль
-    )
+    # # Связь с профилем пользователя (один-к-одному)
+    # profile = relationship(
+    #     "UserProfile", 
+    #     back_populates="auth_user",
+    #     uselist=False,  # Указывает, что это один-к-одному
+    #     cascade="all, delete-orphan"  # При удалении AuthUser удаляется и профиль
+    # )

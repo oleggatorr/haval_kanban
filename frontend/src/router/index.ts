@@ -69,6 +69,48 @@ const routes: RouteRecordRaw[] = [
       title: 'Канбан-user',
     },
   },
+
+  {
+    path: '/test',
+    name: 'user',
+    component: () => import('@/views/private/kanban/test/test_board.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан-user',
+    },
+  },
+
+  {
+    path: '/test2',
+    name: 'user',
+    component: () => import('@/views/private/kanban/test/KanbanPage.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан-user',
+    },
+  },
+
+  {
+    path: '/test3/:id',
+    name: 'test3',
+    component: () => import('@/views/test1/ProgectInfoVue.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Проект',
+    },
+  },
+  {
+    path: '/test4/:id',
+    name: 'test4',
+    component: () => import('@/views/test1/TaskBoardVue.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан проекта',
+    },
+  },
+
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

@@ -39,6 +39,8 @@ class Settings:
     USER_DB_USER         = str(os.getenv('USER_DB_USER'))
     USER_DB_PASSWORD     = str(os.getenv('USER_DB_PASSWORD'))
     USER_DB_NAME         = str(os.getenv('USER_DB_NAME'))
+    
+    JWT_SECRET_KEY = str(os.getenv('JWT_SECRET_KEY', "12345"))
 
 
 

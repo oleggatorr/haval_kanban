@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kanban — Проект №2-2394</title>
+    <script src="https://code.iconify.design/iconify-icon/3.0.2/iconify-icon.min.js"></script>
+    <link rel="stylesheet" href="kanban.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="logo"><img width="100%" src="logo.png" /></div>
+        <nav class="nav">
+          <a href="#"
+            ><iconify-icon class="icon" icon="solar:folder-with-files-outline"></iconify-icon
+            ><span>Проекты</span></a
+          >
+          <a href="#"
+            ><iconify-icon class="icon" icon="solar:checklist-minimalistic-outline"></iconify-icon
+            ><span>Мои задачи</span></a
+          >
+          <a class="active" href="#"
+            ><iconify-icon class="icon" icon="solar:kanban-board-outline"></iconify-icon
+            ><span>Канбан</span></a
+          >
+          <a href="#"
+            ><iconify-icon class="icon" icon="solar:calendar-outline"></iconify-icon
+            ><span>Календарь</span></a
+          >
+          <a href="#"
+            ><iconify-icon class="icon" icon="solar:chart-2-outline"></iconify-icon
+            ><span>Отчёты</span></a
+          >
+          <a href="#"
+            ><iconify-icon class="icon" icon="solar:settings-outline"></iconify-icon
+            ><span>Настройки</span></a
+          >
+        </nav>
+        <div class="sidebar-user">
+          <div class="avatar">ИП</div>
+          <div class="user-meta">Иван Петров<small>Frontend Developer</small></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="search-wrap">
+            <iconify-icon icon="solar:magnifer-outline"></iconify-icon
+            ><input class="search" placeholder="Поиск задач, проектов..." />
+          </div>
+          <button class="icon-btn" aria-label="Уведомления">
+            <iconify-icon icon="solar:bell-outline"></iconify-icon>
+          </button>
+          <button class="icon-btn" aria-label="Приложения">
+            <iconify-icon icon="solar:widget-2-outline"></iconify-icon>
+          </button>
+          <div class="profile"></div>
+        </header>
+
+        <section class="content">
+          <div class="project-head">
+            <div>
+              <div class="crumb">
+                <iconify-icon icon="solar:arrow-left-outline"></iconify-icon> Назад к проектам
+              </div>
+              <h1>
+                Проект №2-2394
+                <span
+                  style="
+                    font-size: 11px;
+                    background: #e7f5ff;
+                    color: #168be5;
+                    padding: 5px 9px;
+                    border-radius: 20px;
+                    vertical-align: middle;
+                  "
+                  >В работе</span
+                >
+              </h1>
+              <div class="subtitle">Разработка системы автоматизации производства</div>
+            </div>
+            <div class="head-actions">
+              <button class="btn">
+                <iconify-icon icon="solar:filter-outline"></iconify-icon> Фильтры
+              </button>
+              <button class="btn btn-more" aria-label="Дополнительно">
+                <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+              </button>
+              <button class="btn primary">
+                <iconify-icon icon="solar:add-circle-outline"></iconify-icon> Добавить задачу
+              </button>
+            </div>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <div class="num">10</div>
+              <div class="label">Поставленные задачи</div>
+            </div>
+            <div class="stat">
+              <div class="num">2</div>
+              <div class="label">В работе</div>
+            </div>
+            <div class="stat">
+              <div class="num">5</div>
+              <div class="label">На тестировании</div>
+            </div>
+            <div class="stat">
+              <div class="num">3</div>
+              <div class="label">Завершено</div>
+            </div>
+            <div class="stat person">
+              <div class="avatar">ЕК</div>
+              <div><b>Екатерина Е.В.</b><span>Менеджер проекта</span></div>
+            </div>
+            <div class="stat person">
+              <div class="avatar">ЕК</div>
+              <div><b>Алексей С.В.</b><span>Разработчик</span></div>
+            </div>
+            <div class="stat person">
+              <div class="avatar">МК</div>
+              <div><b>Мария К.С.</b><span>Инженер</span></div>
+            </div>
+            <div class="stat person">
+              <div class="avatar">ИП</div>
+              <div><b>Иван Петров</b><span>Инициатор</span></div>
+            </div>
+            <div class="stat profit">
+              <div class="num">2 652 000 ₽</div>
+              <div class="label">Чистая выгода проекта</div>
+            </div>
+          </div>
+
+          <div class="board-wrap">
+            <div class="board">
+              <section class="column">
+                <div class="column-head">
+                  <div class="column-title">
+                    <span class="dot"></span>Задачи <span class="count">4</span>
+                  </div>
+                  <iconify-icon class="column-menu" icon="solar:menu-dots-outline"></iconify-icon>
+                </div>
+                <button class="add-task">
+                  <iconify-icon icon="solar:add-circle-outline"></iconify-icon> Добавить задачу
+                </button>
+                <div class="cards">
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag">FrontEnd</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Разработать профиль пользователя</h3>
+                    <div class="desc">
+                      Разработать загрузку аватара пользователя. Добавить поля: имя, фамилия, пол,
+                      возраст.
+                    </div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 18
+                      </div>
+                      <span class="priority high">Высокий</span>
+                    </div>
+                  </article>
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag purple">Документация</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Создание проектной документации</h3>
+                    <div class="desc">
+                      Разработать документацию по работе проекта. Составить экономический расчет
+                      затрат.
+                    </div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 16 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 2
+                      </div>
+                      <span class="priority medium">Нормальный</span>
+                    </div>
+                  </article>
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag orange">HR / Кадры</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Подбор команды</h3>
+                    <div class="desc">
+                      Найти и согласовать кандидатов на ключевые позиции проекта.
+                    </div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 14 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 5
+                      </div>
+                      <span class="priority" style="background: #fff1d7; color: #c78318"
+                        >Средний</span
+                      >
+                    </div>
+                  </article>
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag red">UX/UI</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Согласование макетов интерфейса</h3>
+                    <div class="desc">Провести ревью с командой и внести правки по замечаниям.</div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 12 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 3
+                      </div>
+                      <span class="priority low">Низкий</span>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="column work">
+                <div class="column-head">
+                  <div class="column-title">
+                    <span class="dot"></span>В работе <span class="count">2</span>
+                  </div>
+                  <iconify-icon class="column-menu" icon="solar:menu-dots-outline"></iconify-icon>
+                </div>
+                <button class="add-task">
+                  <iconify-icon icon="solar:add-circle-outline"></iconify-icon> Добавить задачу
+                </button>
+                <div class="cards">
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag">FrontEnd</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Разработать профиль пользователя</h3>
+                    <div class="desc">
+                      Разработать загрузку аватара пользователя. Добавить поля: имя, фамилия, пол,
+                      возраст.
+                    </div>
+                    <div class="progress"><span style="width: 60%"></span></div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 16 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 5
+                      </div>
+                      <span class="priority high">Высокий</span>
+                    </div>
+                  </article>
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag purple">Документация</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Создание проектной документации</h3>
+                    <div class="desc">
+                      Разработать документацию по работе проекта. Составить экономический расчет
+                      затрат.
+                    </div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 14 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 2
+                      </div>
+                      <span class="priority medium">Нормальный</span>
+                    </div>
+                  </article>
+                </div>
+              </section>
+
+              <section class="column test">
+                <div class="column-head">
+                  <div class="column-title">
+                    <span class="dot"></span>Тестирование <span class="count">5</span>
+                  </div>
+                  <iconify-icon class="column-menu" icon="solar:menu-dots-outline"></iconify-icon>
+                </div>
+                <button class="add-task">
+                  <iconify-icon icon="solar:add-circle-outline"></iconify-icon> Добавить задачу
+                </button>
+                <div class="cards">
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag cyan">Backend</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Разработка API для авторизации</h3>
+                    <div class="desc">Реализовать JWT авторизацию и защиту маршрутов.</div>
+                    <div class="card-foot">
+                      <div class="meta">
+                        <span class="mini-avatar"></span>
+                        <iconify-icon icon="solar:calendar-outline"></iconify-icon> Сент 17 &nbsp;
+                        <iconify-icon icon="solar:chat-round-dots-outline"></iconify-icon> 4
+                      </div>
+                      <span class="priority high">Высокий</span>
+                    </div>
+                  </article>
+                  <article class="card">
+                    <div class="card-top">
+                      <span class="tag">FrontEnd</span
+                      ><button class="menu" aria-label="Меню">
+                        <iconify-icon icon="solar:menu-dots-outline"></iconify-icon>
+                      </button>
+                    </div>
+                    <h3>Исправление вёрстки мобильной версии</h3>
+                  </article>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
