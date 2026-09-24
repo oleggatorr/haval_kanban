@@ -1,9 +1,9 @@
 # === Переменные окружения (НИКОГДА не коммитить секреты) ===
-.env
-.env.*
-!.env.example
-backend/.env
-frontend/.env
+# .env
+# .env.*
+# !.env.example
+# backend/.env
+# frontend/.env
 
 # === Python / Backend ===
 __pycache__/
