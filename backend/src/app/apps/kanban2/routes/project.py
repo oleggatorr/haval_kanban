@@ -9,7 +9,7 @@ from ..schemas.project import (
     ProjectListResponse
 )
 from ..services.project_service import ProjectService
-from ..services.board_tree_service import BoardTreeService
+from ..services.board_tree_service import KanbanService
 from ..schemas.tree import *
 
 
@@ -124,7 +124,7 @@ async def delete_project(
     return {"message": "Проект успешно удален"}
 
 
-@router.get("/{project_id}/full-board", response_model=ProjectTreeResponse)
+@router.get("/{project_id}/full-board")
 async def get_project_full_board(
     project_id: int,
     db: AsyncSession = Depends(get_db)
@@ -133,8 +133,8 @@ async def get_project_full_board(
     Получить полную структуру доски проекта в виде дерева.
     Включает: Проект -> Доска -> Колонки -> Задачи (с данными и пользователями).
     """
-    service = BoardTreeService(db)
-    tree = await service.get_full_board_tree(project_id)
+    service = KanbanService(db)
+    tree = await service.get_kanban_data(project_id)
     
     if not tree:
         raise HTTPException(status_code=404, detail="Проект или его доска не найдены")

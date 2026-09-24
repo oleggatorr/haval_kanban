@@ -103,7 +103,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/test4/:id',
     name: 'test4',
-    component: () => import('@/views/test1/TaskBoardVue.vue'),
+    component: () => import('@/views/test2/TaskBoardView.vue'),
     props: true,
     meta: {
       requiresAuth: false,

@@ -1,601 +1,163 @@
-// src/composables/useKanbanBoard.ts
-import { ref, computed, watch, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { httpClient } from '@/services/api'
+// composables/useKanbanBoard.ts
+import { computed, ref } from 'vue'
+import { createApiService } from '@/lib/api/service'
+import type { Board, Column, Task, Subtask, FullBoardResponse } from '@/types/taskboard'
+import type { ApiError } from '@/lib/api/types'
 
-// --- Типы ---
+const service = createApiService({ baseUrl: '' })
 
-interface Subtask {
-  id: number
-  tasks_id: number
-  name: string
-  order_id: number
-}
-
-interface Task {
-  id: number
-  name: string
-  order_id: number
-  is_complit: boolean
-  column_id: number
-  assignees: string[]
-  subtasks: Subtask[]
-}
-
-interface Column {
-  id: number
-  name: string
-  order_id: number
-  is_start: boolean
-  is_final: boolean
-  is_active: boolean
-  tab_id: number
-  tasks?: Task[]
-}
-
-interface Tab {
-  id: number
-  name: string
-  order_id: number
-  project_id: number
-  columns: Column[]
-}
-
-interface ProjectResponse {
-  id: number
-  name: string
-  description: string
-  updated_at: string
-  tabs: Tab[]
-}
-
-// Интерфейс для ответа check_update
-interface CheckUpdateResponse {
-  id: number
-  updated_at: string
-}
-
-// --- Payloads для создания ---
-
-interface NewTabPayload {
-  name: string
-  order_id: number
-  project_id: number
-}
-
-interface NewColumnPayload {
-  name: string
-  order_id: number
-  tab_id: number
-  is_start?: boolean
-  is_final?: boolean
-  is_active?: boolean
-}
-
-interface NewTaskPayload {
-  name: string
-  order_id: number
-  column_id: number
-  assignees?: string[]
-}
-
-interface NewSubtaskPayload {
-  name: string
-  order_id: number
-  tasks_id: number
-}
-
-// --- Типы для ответов ---
-
-interface ColumnResponse {
-  id: number
-  name: string
-  order_id: number
-  is_start: boolean
-  is_final: boolean
-  is_active: boolean
-  tab_id: number
-}
-
-interface TaskResponse {
-  id: number
-  name: string
-  order_id: number
-  is_complit: boolean
-  column_id: number
-  assignees: string[]
-  subtasks: Subtask[]
-}
-
-interface SubtaskResponse {
-  id: number
-  tasks_id: number
-  name: string
-  order_id: number
-}
-
-interface UseKanbanBoardReturn {
-  loading: typeof loading
-  error: typeof error
-  projectName: typeof projectName
-  tabs: typeof tabs
-  activeTabId: typeof activeTabId
-  activeTab: ReturnType<typeof activeTab>
-  tabsWithCount: ReturnType<typeof tabsWithCount>
-  fetchBoard: () => Promise<void>
-  setActiveTab: (tabId: number) => void
-  createTab: () => Promise<void>
-  deleteTab: (tabId: number) => Promise<void>
-  createColumn: (tabId: number, name?: string) => Promise<void>
-  deleteColumn: (columnId: number) => Promise<void>
-  createTask: (columnId: number, name?: string) => Promise<void>
-  deleteTask: (taskId: number) => Promise<void>
-  updateTaskStatus: (taskId: number, isComplit: boolean) => Promise<void>
-  createSubtask: (taskId: number, name?: string) => Promise<void>
-  deleteSubtask: (subtaskId: number) => Promise<void>
-}
-
-export function useKanbanBoard(): UseKanbanBoardReturn {
-  const route = useRoute()
-
-  // Состояния
-  const loading = ref(true)
+export function useKanbanBoard(projectId: number) {
+  const loading = ref(false)
   const error = ref<string | null>(null)
-  const projectName = ref<string>('')
-  const tabs = ref<Tab[]>([])
-  const activeTabId = ref<number | null>(null)
 
-  // Храним последнюю известную дату обновления
-  const lastUpdatedAt = ref<string | null>(null)
+  const board = ref<Board | null>(null)
+  const columns = ref<Column[]>([])
+  const tasks = ref<Task[]>([])
+  const subtasks = ref<Subtask[]>([])
 
-  // Переменная для интервала опроса
-  let updateInterval: number | null = null
+  const projectName = computed(() => board.value?.name ?? '')
 
-  // Вычисляемые свойства
-  const activeTab = computed(() => {
-    if (!activeTabId.value) return null
-    return tabs.value.find((tab) => tab.id === activeTabId.value) || null
-  })
-
-  const tabsWithCount = computed(() => {
-    return tabs.value.map((tab) => ({
-      ...tab,
-      taskCount: tab.columns.reduce((sum, col) => sum + (col.tasks?.length || 0), 0),
-    }))
-  })
-
-  const getProjectId = (): number | null => {
-    const id = route.params.project_id
-    if (!id) return null
-    const parsedId = Number(id)
-    return isNaN(parsedId) ? null : parsedId
-  }
-
-  const sortData = (tabsData: Tab[]) => {
-    const sortedTabs = tabsData.sort((a, b) => a.order_id - b.order_id)
-    sortedTabs.forEach((tab) => {
-      tab.columns = (tab.columns || []).sort((a, b) => a.order_id - b.order_id)
-      tab.columns.forEach((column) => {
-        column.tasks = (column.tasks || []).sort((a, b) => a.order_id - b.order_id)
-        column.tasks?.forEach((task) => {
-          task.subtasks = (task.subtasks || []).sort((a, b) => a.order_id - b.order_id)
-        })
-      })
-    })
-    return sortedTabs
-  }
-
-  // Вспомогательная функция для поиска колонки по ID
-  const findColumnById = (columnId: number): { tab: Tab; column: Column } | null => {
-    for (const tab of tabs.value) {
-      const column = tab.columns.find((c) => c.id === columnId)
-      if (column) {
-        return { tab, column }
-      }
-    }
-    return null
-  }
-
-  // Вспомогательная функция для поиска задачи по ID
-  const findTaskById = (taskId: number): { tab: Tab; column: Column; task: Task } | null => {
-    for (const tab of tabs.value) {
-      for (const column of tab.columns) {
-        const task = column.tasks?.find((t) => t.id === taskId)
-        if (task) {
-          return { tab, column, task }
-        }
-      }
-    }
-    return null
-  }
-
-  // Вспомогательная функция для поиска подзадачи по ID
-  const findSubtaskById = (
-    subtaskId: number,
-  ): { tab: Tab; column: Column; task: Task; subtask: Subtask } | null => {
-    for (const tab of tabs.value) {
-      for (const column of tab.columns) {
-        for (const task of column.tasks || []) {
-          const subtask = task.subtasks.find((s) => s.id === subtaskId)
-          if (subtask) {
-            return { tab, column, task, subtask }
-          }
-        }
-      }
-    }
-    return null
-  }
-
-  // Основная загрузка доски
-  const fetchBoard = async () => {
-    const projectId = getProjectId()
-    if (!projectId) {
-      error.value = 'Неверный ID проекта'
-      loading.value = false
-      return
-    }
-
-    // Не показываем лоадер при фоновом обновлении, если данные уже есть
-    const isInitialLoad = tabs.value.length === 0
-    if (isInitialLoad) {
-      loading.value = true
-    }
+  /** GET /project/{projectId}/full-board */
+  async function fetchBoard() {
+    loading.value = true
     error.value = null
-
     try {
-      const url = `/project/${projectId}/deep`
-      const response = await httpClient.get<ProjectResponse>(url)
-
-      if (response) {
-        projectName.value = response.name || 'Без названия'
-        lastUpdatedAt.value = response.updated_at
-
-        const rawTabs = response.tabs || []
-        tabs.value = sortData(rawTabs)
-
-        if (tabs.value.length > 0) {
-          if (!activeTabId.value || !tabs.value.find((t) => t.id === activeTabId.value)) {
-            activeTabId.value = tabs.value[0].id
-          }
-        } else {
-          activeTabId.value = null
-        }
-      } else {
-        throw new Error('Пустой ответ от сервера')
-      }
-    } catch (err) {
-      console.error('Ошибка при загрузке канбан-доски:', err)
-      if (isInitialLoad) {
-        error.value = `Не удалось загрузить данные: ${err instanceof Error ? err.message : 'Неизвестная ошибка'}`
-      }
+      const data = await service.get<FullBoardResponse>(`/project/${projectId}/full-board`)
+      board.value = data.board
+      columns.value = data.columns ?? []
+      tasks.value = data.tasks ?? []
+      subtasks.value = data.subtasks ?? []
+    } catch (e) {
+      const err = e as ApiError
+      error.value = err.message || 'Не удалось загрузить доску'
+      board.value = null
+      columns.value = []
+      tasks.value = []
+      subtasks.value = []
     } finally {
-      if (isInitialLoad) {
-        loading.value = false
-      }
+      loading.value = false
     }
   }
 
-  // Проверка обновлений
-  const checkForUpdates = async () => {
-    const projectId = getProjectId()
-    if (!projectId) return
+  // ——— Утилиты ———
 
-    try {
-      const response = await httpClient.get<CheckUpdateResponse>(
-        `/project/check_update/${projectId}`,
+  /** Подзадачи конкретной задачи */
+  function getSubtasksByTask(taskId: number): Subtask[] {
+    return subtasks.value.filter((s) => s.parent_task_id === taskId)
+  }
+
+  /** Задачи конкретной колонки */
+  function getTasksByColumn(columnId: number): Task[] {
+    return tasks.value.filter((t) => t.column_id === columnId)
+  }
+
+  // ——— Мутации (заглушки, подставьте свои эндпоинты) ———
+
+  async function createColumn(payload: { name: string; description?: string | null }) {
+    const created = await service.post<Column>(`/board/${board.value?.id}/columns`, {
+      name: payload.name,
+      description: payload.description ?? null,
+      position: columns.value.length,
+      flags: [],
+    })
+    columns.value.push(created)
+    return created
+  }
+
+  async function deleteColumn(columnId: number) {
+    await service.delete(`/columns/${columnId}`)
+    columns.value = columns.value.filter((c) => c.id !== columnId)
+    tasks.value = tasks.value.filter((t) => t.column_id !== columnId)
+  }
+
+  async function createTask(columnId: number, payload: Partial<Task>) {
+    const created = await service.post<Task>(`/columns/${columnId}/tasks`, {
+      name: payload.name ?? 'Новая задача',
+      description: payload.description ?? null,
+      position: getTasksByColumn(columnId).length,
+      status_id: payload.status_id ?? null,
+      ...payload,
+    })
+    tasks.value.push(created)
+    return created
+  }
+
+  async function deleteTask(taskId: number) {
+    await service.delete(`/tasks/${taskId}`)
+    tasks.value = tasks.value.filter((t) => t.id !== taskId)
+    subtasks.value = subtasks.value.filter((s) => s.parent_task_id !== taskId)
+  }
+
+  async function updateTaskStatus(taskId: number, statusId: number | null) {
+    const updated = await service.patch<Task>(`/tasks/${taskId}`, {
+      status_id: statusId,
+    })
+    tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
+    return updated
+  }
+
+  async function createSubtask(parentTaskId: number, payload: Partial<Subtask>) {
+    const created = await service.post<Subtask>(`/tasks/${parentTaskId}/subtasks`, {
+      name: payload.name ?? 'Новая подзадача',
+      description: payload.description ?? null,
+      status_id: payload.status_id ?? null,
+      ...payload,
+    })
+    subtasks.value.push(created)
+
+    // обновим счётчики у родительской задачи
+    tasks.value = tasks.value.map((t) =>
+      t.id === parentTaskId ? { ...t, subtasks_count: t.subtasks_count + 1 } : t,
+    )
+    return created
+  }
+
+  async function deleteSubtask(subtaskId: number) {
+    const subtask = subtasks.value.find((s) => s.id === subtaskId)
+    await service.delete(`/subtasks/${subtaskId}`)
+    subtasks.value = subtasks.value.filter((s) => s.id !== subtaskId)
+
+    if (subtask) {
+      tasks.value = tasks.value.map((t) =>
+        t.id === subtask.parent_task_id
+          ? { ...t, subtasks_count: Math.max(0, t.subtasks_count - 1) }
+          : t,
       )
-
-      if (response && response.updated_at) {
-        if (lastUpdatedAt.value !== response.updated_at) {
-          console.log('🔄 Обнаружены изменения на сервере, обновляем доску...')
-          await fetchBoard()
-        }
-      }
-    } catch (err) {
-      console.warn('Не удалось проверить обновления:', err)
     }
   }
 
-  // Запуск и остановка поллинга
-  const startPolling = () => {
-    stopPolling()
-    checkForUpdates()
-    updateInterval = window.setInterval(checkForUpdates, 20000)
+  /** Совместимо с шаблоном: (subtaskId, isCompleted) */
+  async function toggleSubtaskStatus(subtaskId: number, isCompleted: boolean) {
+    const updated = await service.patch<Subtask>(`/subtasks/${subtaskId}`, {
+      status_id: isCompleted ? 3 : 1,
+      date_time_end: isCompleted ? new Date().toISOString() : null,
+    })
+    subtasks.value = subtasks.value.map((s) => (s.id === subtaskId ? updated : s))
+
+    // обновим completed_subtasks_count у родительской задачи
+    const parentId = updated.parent_task_id
+    const completed = subtasks.value.filter(
+      (s) => s.parent_task_id === parentId && s.date_time_end !== null,
+    ).length
+    tasks.value = tasks.value.map((t) =>
+      t.id === parentId ? { ...t, completed_subtasks_count: completed } : t,
+    )
+    return updated
   }
-
-  const stopPolling = () => {
-    if (updateInterval) {
-      clearInterval(updateInterval)
-      updateInterval = null
-    }
-  }
-
-  const setActiveTab = (tabId: number) => {
-    activeTabId.value = tabId
-  }
-
-  // ========== CRUD для вкладок ==========
-
-  const createTab = async () => {
-    const projectId = getProjectId()
-    if (!projectId) return
-
-    const name = prompt('Введите название новой вкладки:')
-    if (!name) return
-
-    try {
-      const maxOrder = tabs.value.length > 0 ? Math.max(...tabs.value.map((t) => t.order_id)) : -1
-
-      const payload: NewTabPayload = {
-        name,
-        order_id: maxOrder + 1,
-        project_id: projectId,
-      }
-
-      const response = await httpClient.post<Tab>('/tab/', payload)
-
-      if (response) {
-        tabs.value.push(response)
-        tabs.value = sortData(tabs.value)
-        activeTabId.value = response.id
-      }
-    } catch (err) {
-      console.error('Ошибка при создании вкладки:', err)
-      alert('Не удалось создать вкладку')
-    }
-  }
-
-  const deleteTab = async (tabId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить эту вкладку? Все задачи внутри будут удалены.')) {
-      return
-    }
-
-    try {
-      await httpClient.delete(`/tab/${tabId}`)
-
-      tabs.value = tabs.value.filter((t) => t.id !== tabId)
-
-      if (activeTabId.value === tabId) {
-        activeTabId.value = tabs.value.length > 0 ? tabs.value[0].id : null
-      }
-    } catch (err) {
-      console.error('Ошибка при удалении вкладки:', err)
-      alert('Не удалось удалить вкладку')
-    }
-  }
-
-  // ========== CRUD для колонок ==========
-
-  const createColumn = async (tabId: number, name?: string) => {
-    const tab = tabs.value.find((t) => t.id === tabId)
-    if (!tab) {
-      alert('Вкладка не найдена')
-      return
-    }
-
-    const columnName = name || prompt('Введите название колонки:')
-    if (!columnName) return
-
-    try {
-      const maxOrder = tab.columns.length > 0 ? Math.max(...tab.columns.map((c) => c.order_id)) : -1
-
-      const payload: NewColumnPayload = {
-        name: columnName,
-        order_id: maxOrder + 1,
-        tab_id: tabId,
-        is_active: true,
-      }
-
-      const response = await httpClient.post<ColumnResponse>('/column/', payload)
-
-      if (response) {
-        const newColumn: Column = {
-          ...response,
-          tasks: [],
-        }
-        tab.columns.push(newColumn)
-        tab.columns = tab.columns.sort((a, b) => a.order_id - b.order_id)
-      }
-    } catch (err) {
-      console.error('Ошибка при создании колонки:', err)
-      alert('Не удалось создать колонку')
-    }
-  }
-
-  const deleteColumn = async (columnId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить эту колонку? Все задачи внутри будут удалены.')) {
-      return
-    }
-
-    try {
-      await httpClient.delete(`/column/${columnId}`)
-
-      // Удаляем колонку из всех вкладок
-      for (const tab of tabs.value) {
-        const index = tab.columns.findIndex((c) => c.id === columnId)
-        if (index !== -1) {
-          tab.columns.splice(index, 1)
-          break
-        }
-      }
-    } catch (err) {
-      console.error('Ошибка при удалении колонки:', err)
-      alert('Не удалось удалить колонку')
-    }
-  }
-
-  // ========== CRUD для задач ==========
-
-  const createTask = async (columnId: number, name?: string) => {
-    const result = findColumnById(columnId)
-    if (!result) {
-      alert('Колонка не найдена')
-      return
-    }
-
-    const taskName = name || prompt('Введите название задачи:')
-    if (!taskName) return
-
-    try {
-      const maxOrder = result.column.tasks?.length
-        ? Math.max(...result.column.tasks.map((t) => t.order_id))
-        : -1
-
-      const payload: NewTaskPayload = {
-        name: taskName,
-        order_id: maxOrder + 1,
-        column_id: columnId,
-        assignees: [],
-      }
-
-      const response = await httpClient.post<TaskResponse>('/task/', payload)
-
-      if (response) {
-        if (!result.column.tasks) {
-          result.column.tasks = []
-        }
-        const newTask: Task = {
-          ...response,
-          subtasks: response.subtasks || [],
-        }
-        result.column.tasks.push(newTask)
-        result.column.tasks = result.column.tasks.sort((a, b) => a.order_id - b.order_id)
-      }
-    } catch (err) {
-      console.error('Ошибка при создании задачи:', err)
-      alert('Не удалось создать задачу')
-    }
-  }
-
-  const deleteTask = async (taskId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить эту задачу?')) {
-      return
-    }
-
-    try {
-      await httpClient.delete(`/task/${taskId}`)
-
-      const result = findTaskById(taskId)
-      if (result) {
-        const taskIndex = result.column.tasks?.findIndex((t) => t.id === taskId) ?? -1
-        if (taskIndex !== -1) {
-          result.column.tasks?.splice(taskIndex, 1)
-        }
-      }
-    } catch (err) {
-      console.error('Ошибка при удалении задачи:', err)
-      alert('Не удалось удалить задачу')
-    }
-  }
-
-  const updateTaskStatus = async (taskId: number, isComplit: boolean) => {
-    try {
-      await httpClient.patch(`/task/${taskId}`, { is_complit: isComplit })
-
-      const result = findTaskById(taskId)
-      if (result) {
-        result.task.is_complit = isComplit
-      }
-    } catch (err) {
-      console.error('Ошибка при обновлении статуса задачи:', err)
-      alert('Не удалось обновить статус задачи')
-    }
-  }
-
-  // ========== CRUD для подзадач ==========
-
-  const createSubtask = async (taskId: number, name?: string) => {
-    const result = findTaskById(taskId)
-    if (!result) {
-      alert('Задача не найдена')
-      return
-    }
-
-    const subtaskName = name || prompt('Введите название подзадачи:')
-    if (!subtaskName) return
-
-    try {
-      const maxOrder =
-        result.task.subtasks.length > 0
-          ? Math.max(...result.task.subtasks.map((s) => s.order_id))
-          : -1
-
-      const payload: NewSubtaskPayload = {
-        name: subtaskName,
-        order_id: maxOrder + 1,
-        tasks_id: taskId,
-      }
-
-      const response = await httpClient.post<SubtaskResponse>('/sub_task/', payload)
-
-      if (response) {
-        const newSubtask: Subtask = {
-          id: response.id,
-          tasks_id: response.tasks_id,
-          name: response.name,
-          order_id: response.order_id,
-        }
-        result.task.subtasks.push(newSubtask)
-        result.task.subtasks = result.task.subtasks.sort((a, b) => a.order_id - b.order_id)
-      }
-    } catch (err) {
-      console.error('Ошибка при создании подзадачи:', err)
-      alert('Не удалось создать подзадачу')
-    }
-  }
-
-  const deleteSubtask = async (subtaskId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить эту подзадачу?')) {
-      return
-    }
-
-    try {
-      await httpClient.delete(`/sub_task/${subtaskId}`)
-
-      const result = findSubtaskById(subtaskId)
-      if (result) {
-        const subtaskIndex = result.task.subtasks.findIndex((s) => s.id === subtaskId)
-        if (subtaskIndex !== -1) {
-          result.task.subtasks.splice(subtaskIndex, 1)
-        }
-      }
-    } catch (err) {
-      console.error('Ошибка при удалении подзадачи:', err)
-      alert('Не удалось удалить подзадачу')
-    }
-  }
-
-  // Следим за изменением project_id в маршруте
-  watch(
-    () => route.params.project_id,
-    (newId, oldId) => {
-      if (newId !== oldId) {
-        stopPolling()
-        lastUpdatedAt.value = null
-        fetchBoard()
-        startPolling()
-      }
-    },
-    { immediate: true },
-  )
-
-  // Очищаем интервал при уничтожении компонента
-  onUnmounted(() => {
-    stopPolling()
-  })
 
   return {
+    // состояние
     loading,
     error,
     projectName,
-    tabs,
-    activeTabId,
-    activeTab,
-    tabsWithCount,
+    board,
+    columns,
+    tasks,
+    subtasks,
+    // методы
     fetchBoard,
-    setActiveTab,
-    createTab,
-    deleteTab,
+    getTasksByColumn,
+    getSubtasksByTask,
     createColumn,
     deleteColumn,
     createTask,
@@ -603,5 +165,6 @@ export function useKanbanBoard(): UseKanbanBoardReturn {
     updateTaskStatus,
     createSubtask,
     deleteSubtask,
+    toggleSubtaskStatus,
   }
 }

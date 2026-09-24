@@ -13,11 +13,11 @@ import '@/assets/styles/main.css'
   <!-- <AppHeader /> -->
 
   <!-- Основной контент -->
-  <!-- <main class="content-wrapper"> -->
-  <RouterView v-slot="{ Component }">
-    <component :is="Component" :key="$route.fullPath" />
-  </RouterView>
-  <!-- </main> -->
+  <main class="content-wrapper">
+    <RouterView v-slot="{ Component }">
+      <component :is="Component" :key="$route.fullPath" />
+    </RouterView>
+  </main>
   <!-- </div> -->
 </template>
 
@@ -45,7 +45,7 @@ body {
 
 .content-wrapper {
   flex: 1;
-  padding: 2rem;
+  /* padding: 2rem; */
   position: relative;
   z-index: 1;
   /* margin-left: 70px;
