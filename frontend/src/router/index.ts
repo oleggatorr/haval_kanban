@@ -110,7 +110,16 @@ const routes: RouteRecordRaw[] = [
       title: 'Канбан проекта',
     },
   },
-
+  {
+    path: '/test5/:id',
+    name: 'test5',
+    component: () => import('@/views/test2/ProjectInfoView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан проекта',
+    },
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'not-found',

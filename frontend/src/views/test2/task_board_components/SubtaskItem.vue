@@ -1,3 +1,4 @@
+<!-- src\views\test2\task_board_components\SubtaskItem.vue -->
 <template>
   <div class="subtask-container" :class="{ 'is-expanded': isExpanded }">
     <!-- Основная карточка подзадачи -->

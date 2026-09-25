@@ -23,3 +23,5 @@ class Project(Base):
     cards = relationship("ProjectCard", back_populates="project")
     data = relationship("ProjectData", back_populates="project", uselist=False)
     task_board = relationship("TaskBoard", back_populates="project", uselist=False)
+    
+    attachments = relationship("ProjectAttachment", back_populates="project", cascade="all, delete-orphan")

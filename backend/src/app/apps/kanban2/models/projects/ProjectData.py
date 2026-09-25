@@ -22,3 +22,4 @@ class ProjectData(Base):
     
     # Связь с проектом (1 к 1)
     project = relationship("Project", back_populates="data")
+    

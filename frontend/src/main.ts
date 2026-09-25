@@ -3,7 +3,7 @@ import { createPinia } from 'pinia'
 
 import App from './App.vue'
 import router from './router'
-import { registerGlobalComponents } from '@/plugins/components'
+// import { registerGlobalComponents } from '@/plugins/components'
 
 const app = createApp(App)
 

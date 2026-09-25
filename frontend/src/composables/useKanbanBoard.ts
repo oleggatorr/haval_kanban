@@ -1,14 +1,16 @@
-// composables/useKanbanBoard.ts
-import { computed, ref } from 'vue'
-import { createApiService } from '@/lib/api/service'
+// src/composables/useKanbanBoard.ts
+import { computed, ref, watch, onMounted, type Ref } from 'vue'
+import { useApi } from '@/composables/useApi' // Убедитесь, что путь совпадает с вашей структурой
 import type { Board, Column, Task, Subtask, FullBoardResponse } from '@/types/taskboard'
-import type { ApiError } from '@/lib/api/types'
 
-const service = createApiService({ baseUrl: '' })
+export function useKanbanBoard(projectId: number | string | Ref<number | string>) {
+  // Инициализируем API сразу с нужным типом ответа
+  const api = useApi<FullBoardResponse>()
 
-export function useKanbanBoard(projectId: number) {
-  const loading = ref(false)
-  const error = ref<string | null>(null)
+  // Нормализуем projectId для работы и с ref, и с обычным значением
+  const getProjectId = () => {
+    return typeof projectId === 'object' && 'value' in projectId ? projectId.value : projectId
+  }
 
   const board = ref<Board | null>(null)
   const columns = ref<Column[]>([])
@@ -17,144 +19,176 @@ export function useKanbanBoard(projectId: number) {
 
   const projectName = computed(() => board.value?.name ?? '')
 
-  /** GET /project/{projectId}/full-board */
   async function fetchBoard() {
-    loading.value = true
-    error.value = null
+    const currentId = getProjectId()
+
+    if (!currentId || Number.isNaN(Number(currentId))) {
+      console.warn('[useKanbanBoard] fetchBoard пропущен: некорректный projectId', currentId)
+      return
+    }
+
     try {
-      const data = await service.get<FullBoardResponse>(`/project/${projectId}/full-board`)
-      board.value = data.board
-      columns.value = data.columns ?? []
-      tasks.value = data.tasks ?? []
-      subtasks.value = data.subtasks ?? []
+      // Добавляем слэш в конце, чтобы соответствовать вашему рабочему запросу
+      const path = `/project/${currentId}/full-board/`
+
+      // Вызываем get БЕЗ дженерика, тип уже задан в useApi<FullBoardResponse>()
+      const data = await api.get(path)
+
+      if (data) {
+        board.value = data.board ?? null
+        columns.value = data.columns ?? []
+        tasks.value = data.tasks ?? []
+        subtasks.value = data.subtasks ?? []
+      }
     } catch (e) {
-      const err = e as ApiError
-      error.value = err.message || 'Не удалось загрузить доску'
+      console.error('[useKanbanBoard] Ошибка загрузки доски:', e)
+      // Сбрасываем данные при ошибке
       board.value = null
       columns.value = []
       tasks.value = []
       subtasks.value = []
-    } finally {
-      loading.value = false
     }
   }
 
-  // ——— Утилиты ———
-
-  /** Подзадачи конкретной задачи */
-  function getSubtasksByTask(taskId: number): Subtask[] {
-    return subtasks.value.filter((s) => s.parent_task_id === taskId)
-  }
-
-  /** Задачи конкретной колонки */
-  function getTasksByColumn(columnId: number): Task[] {
-    return tasks.value.filter((t) => t.column_id === columnId)
-  }
-
-  // ——— Мутации (заглушки, подставьте свои эндпоинты) ———
+  // --- Мутации (исправлены для корректной работы с api) ---
 
   async function createColumn(payload: { name: string; description?: string | null }) {
-    const created = await service.post<Column>(`/board/${board.value?.id}/columns`, {
+    if (!board.value?.id) throw new Error('Board not loaded')
+
+    // Для мутаций создаем отдельный инстанс или используем execute,
+    // чтобы не конфликтовать с типом FullBoardResponse основного инстанса
+    const mutationApi = useApi<Column>()
+    const created = await mutationApi.post(`/board/${board.value.id}/columns/`, {
       name: payload.name,
       description: payload.description ?? null,
       position: columns.value.length,
       flags: [],
     })
-    columns.value.push(created)
+
+    if (created) columns.value.push(created)
     return created
   }
 
   async function deleteColumn(columnId: number) {
-    await service.delete(`/columns/${columnId}`)
+    const mutationApi = useApi()
+    await mutationApi.del(`/columns/${columnId}/`)
     columns.value = columns.value.filter((c) => c.id !== columnId)
     tasks.value = tasks.value.filter((t) => t.column_id !== columnId)
   }
 
   async function createTask(columnId: number, payload: Partial<Task>) {
-    const created = await service.post<Task>(`/columns/${columnId}/tasks`, {
+    const mutationApi = useApi<Task>()
+    const created = await mutationApi.post(`/columns/${columnId}/tasks/`, {
       name: payload.name ?? 'Новая задача',
       description: payload.description ?? null,
       position: getTasksByColumn(columnId).length,
       status_id: payload.status_id ?? null,
       ...payload,
     })
-    tasks.value.push(created)
+
+    if (created) tasks.value.push(created)
     return created
   }
 
   async function deleteTask(taskId: number) {
-    await service.delete(`/tasks/${taskId}`)
+    const mutationApi = useApi()
+    await mutationApi.del(`/tasks/${taskId}/`)
     tasks.value = tasks.value.filter((t) => t.id !== taskId)
     subtasks.value = subtasks.value.filter((s) => s.parent_task_id !== taskId)
   }
 
   async function updateTaskStatus(taskId: number, statusId: number | null) {
-    const updated = await service.patch<Task>(`/tasks/${taskId}`, {
-      status_id: statusId,
-    })
-    tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
+    const mutationApi = useApi<Task>()
+    const updated = await mutationApi.patch(`/tasks/${taskId}/`, { status_id: statusId })
+    if (updated) {
+      tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
+    }
     return updated
   }
 
   async function createSubtask(parentTaskId: number, payload: Partial<Subtask>) {
-    const created = await service.post<Subtask>(`/tasks/${parentTaskId}/subtasks`, {
+    const mutationApi = useApi<Subtask>()
+    const created = await mutationApi.post(`/tasks/${parentTaskId}/subtasks/`, {
       name: payload.name ?? 'Новая подзадача',
       description: payload.description ?? null,
       status_id: payload.status_id ?? null,
       ...payload,
     })
-    subtasks.value.push(created)
 
-    // обновим счётчики у родительской задачи
-    tasks.value = tasks.value.map((t) =>
-      t.id === parentTaskId ? { ...t, subtasks_count: t.subtasks_count + 1 } : t,
-    )
+    if (created) {
+      subtasks.value.push(created)
+      tasks.value = tasks.value.map((t) =>
+        t.id === parentTaskId ? { ...t, subtasks_count: (t.subtasks_count ?? 0) + 1 } : t,
+      )
+    }
     return created
   }
 
   async function deleteSubtask(subtaskId: number) {
     const subtask = subtasks.value.find((s) => s.id === subtaskId)
-    await service.delete(`/subtasks/${subtaskId}`)
-    subtasks.value = subtasks.value.filter((s) => s.id !== subtaskId)
+    const mutationApi = useApi()
+    await mutationApi.del(`/subtasks/${subtaskId}/`)
 
+    subtasks.value = subtasks.value.filter((s) => s.id !== subtaskId)
     if (subtask) {
       tasks.value = tasks.value.map((t) =>
         t.id === subtask.parent_task_id
-          ? { ...t, subtasks_count: Math.max(0, t.subtasks_count - 1) }
+          ? { ...t, subtasks_count: Math.max(0, (t.subtasks_count ?? 1) - 1) }
           : t,
       )
     }
   }
 
-  /** Совместимо с шаблоном: (subtaskId, isCompleted) */
   async function toggleSubtaskStatus(subtaskId: number, isCompleted: boolean) {
-    const updated = await service.patch<Subtask>(`/subtasks/${subtaskId}`, {
+    const mutationApi = useApi<Subtask>()
+    const updated = await mutationApi.patch(`/subtasks/${subtaskId}/`, {
       status_id: isCompleted ? 3 : 1,
       date_time_end: isCompleted ? new Date().toISOString() : null,
     })
-    subtasks.value = subtasks.value.map((s) => (s.id === subtaskId ? updated : s))
 
-    // обновим completed_subtasks_count у родительской задачи
-    const parentId = updated.parent_task_id
-    const completed = subtasks.value.filter(
-      (s) => s.parent_task_id === parentId && s.date_time_end !== null,
-    ).length
-    tasks.value = tasks.value.map((t) =>
-      t.id === parentId ? { ...t, completed_subtasks_count: completed } : t,
-    )
+    if (updated) {
+      subtasks.value = subtasks.value.map((s) => (s.id === subtaskId ? updated : s))
+
+      const parentId = updated.parent_task_id
+      const completed = subtasks.value.filter(
+        (s) => s.parent_task_id === parentId && s.date_time_end !== null,
+      ).length
+
+      tasks.value = tasks.value.map((t) =>
+        t.id === parentId ? { ...t, completed_subtasks_count: completed } : t,
+      )
+    }
     return updated
   }
 
+  // --- Утилиты ---
+  function getSubtasksByTask(taskId: number): Subtask[] {
+    return subtasks.value.filter((s) => s.parent_task_id === taskId)
+  }
+
+  function getTasksByColumn(columnId: number): Task[] {
+    return tasks.value.filter((t) => t.column_id === columnId)
+  }
+
+  // --- Жизненный цикл ---
+  onMounted(() => {
+    fetchBoard()
+  })
+
+  if (typeof projectId === 'object' && 'value' in projectId) {
+    watch(projectId, (newId, oldId) => {
+      if (newId !== oldId) fetchBoard()
+    })
+  }
+
   return {
-    // состояние
-    loading,
-    error,
+    loading: api.loading,
+    error: api.error,
     projectName,
     board,
     columns,
     tasks,
     subtasks,
-    // методы
     fetchBoard,
     getTasksByColumn,
     getSubtasksByTask,

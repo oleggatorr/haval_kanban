@@ -1,3 +1,5 @@
+<!-- src\views\test2\task_board_components\TaskCard.vue -->
+
 <template>
   <article class="card" :class="{ 'is-active': task.is_active }">
     <!-- Верхняя часть карточки -->

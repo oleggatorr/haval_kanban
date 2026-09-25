@@ -1,3 +1,4 @@
+<!-- src\views\test2\task_board_components\KanbanColumn.vue -->
 <template>
   <section class="column">
     <!-- Заголовок колонки -->
@@ -17,10 +18,7 @@
         <div class="menu-item" @click="$emit('move-column', { column, direction: 'right' })">
           Сдвинуть вправо ➡️
         </div>
-
-        <!-- ИЗМЕНЕНО: Открываем модалку создания задачи -->
         <div class="menu-item" @click.stop="isCreateTaskOpen = true">➕ Создать задачу</div>
-
         <div class="menu-item" @click.stop="openColumnSettings">⚙️ Настроить</div>
       </DropdownMenu>
     </div>
@@ -42,9 +40,6 @@
         @move-task="(payload) => $emit('move-task', payload)"
       />
 
-      <!-- ИЗМЕНЕНО: Открываем модалку создания задачи -->
-      <!-- <button class="add-task-btn" @click="isCreateTaskOpen = true">➕ Добавить задачу</button> -->
-
       <div class="scroll-spacer"></div>
     </div>
 
@@ -61,8 +56,9 @@ import { computed, ref } from 'vue'
 import TaskCard from './TaskCard.vue'
 import DropdownMenu from '@/components/ui/DropdownMenu.vue'
 import EditColumnModal from './edit_forms/EditColumnModal.vue'
-import CreateTaskModal from './create_forms/CreateTaskModal.vue' // Импорт нового компонента
+import CreateTaskModal from './create_forms/CreateTaskModal.vue'
 
+// Интерфейсы лучше вынести в отдельный файл типов, но оставим здесь для совместимости
 interface Column {
   name: string
   description: string | null
@@ -91,7 +87,8 @@ interface Subtask {
 const props = defineProps<{
   column: Column
   tasks: Task[]
-  allSubtasks: Subtask[]
+  // ИСПРАВЛЕНО: имя пропа должно совпадать с тем, что передается из KanbanBoard (:subtasks)
+  subtasks: Subtask[]
 }>()
 
 const emit = defineEmits<{
@@ -109,13 +106,12 @@ const emit = defineEmits<{
   (e: 'subtask-complete', subtaskId: number): void
   (e: 'subtask-edit', subtask: Subtask): void
   (e: 'update-column', data: Partial<Column> & { id: number }): void
-  // Новое событие для создания задачи с данными
   (e: 'create-task-with-data', payload: { columnId: number; data: any }): void
 }>()
 
 // --- ЛОГИКА МОДАЛЬНЫХ ОКОН ---
 const isEditColumnModalOpen = ref(false)
-const isCreateTaskOpen = ref(false) // Состояние для модалки создания задачи
+const isCreateTaskOpen = ref(false)
 
 const openColumnSettings = () => {
   isEditColumnModalOpen.value = true
@@ -140,8 +136,10 @@ const columnColor = computed(() => {
   return colors[props.column.position % colors.length] || '#cbd5e0'
 })
 
+// ИСПРАВЛЕНО: используем props.subtasks вместо props.allSubtasks
 const getSubtasksForTask = (taskId: number) => {
-  return props.allSubtasks.filter((s) => s.parent_task_id === taskId)
+  if (!props.subtasks) return []
+  return props.subtasks.filter((s) => s.parent_task_id === taskId)
 }
 </script>
 
