@@ -19,7 +19,7 @@ const routes: RouteRecordRaw[] = [
     name: 'home',
     component: () => import('@/views/private/HomeView.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Главная',
     },
   },
@@ -28,7 +28,7 @@ const routes: RouteRecordRaw[] = [
     name: 'projects',
     component: () => import('@/views/private/kanban/projects/ListProgectsVue.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Проекты',
     },
   },
@@ -37,7 +37,7 @@ const routes: RouteRecordRaw[] = [
     name: 'project',
     component: () => import('@/views/private/kanban/projects/ProgectVue.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Проект',
     },
   },
@@ -46,7 +46,7 @@ const routes: RouteRecordRaw[] = [
     name: 'project-board',
     component: () => import('@/views/private/kanban/boards/KanbanBoard.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Доска проекта',
     },
   },
@@ -55,7 +55,7 @@ const routes: RouteRecordRaw[] = [
     name: 'board',
     component: () => import('@/components/layout/KanbanBoard.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Канбан-доска',
     },
   },
@@ -65,7 +65,7 @@ const routes: RouteRecordRaw[] = [
     name: 'user',
     component: () => import('@/views/private/users/ProfileView.vue'),
     meta: {
-      requiresAuth: true,
+      requiresAuth: false,
       title: 'Канбан-user',
     },
   },
@@ -118,6 +118,15 @@ const routes: RouteRecordRaw[] = [
     meta: {
       requiresAuth: false,
       title: 'Канбан проекта',
+    },
+  },
+  {
+    path: '/test6',
+    name: 'test6',
+    component: () => import('@/views/test2/ListProjectsVue.vue'),
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан-user',
     },
   },
   {

@@ -99,3 +99,17 @@ class AttachmentService:
         await db.commit()
         
         return True
+    
+    @staticmethod
+    async def get_attachment_by_id(
+        db: AsyncSession, 
+        attachment_id: int
+    ) -> Optional[ProjectAttachment]:
+        """
+        Получает одно вложение по ID.
+        Возвращает None, если вложение не найдено.
+        """
+        result = await db.execute(
+            select(ProjectAttachment).where(ProjectAttachment.id == attachment_id)
+        )
+        return result.scalar_one_or_none()
