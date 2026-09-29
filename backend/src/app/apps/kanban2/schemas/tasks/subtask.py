@@ -76,3 +76,7 @@ class SubTaskListResponse(BaseModel):
 class SubTaskReorderRequest(BaseModel):
     """Для drag & drop подзадач внутри одной задачи."""
     subtask_ids: List[int] = Field(..., min_length=1)
+
+class SubTaskStatusUpdate(BaseModel):
+    """Смена статуса подзадачи."""
+    status_id: int = Field(..., description="ID нового статуса")

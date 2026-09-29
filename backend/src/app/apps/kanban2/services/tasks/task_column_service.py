@@ -5,8 +5,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models.tasks.TaskColumn import TaskColumn
-from ..schemas.task_column import TaskColumnCreate, TaskColumnUpdate
+from ...models.tasks.TaskColumn import TaskColumn
+from ...schemas.tasks.task_column import TaskColumnCreate, TaskColumnUpdate
 
 
 class TaskColumnService:

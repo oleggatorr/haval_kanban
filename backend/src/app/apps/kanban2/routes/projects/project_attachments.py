@@ -8,10 +8,10 @@ from loguru import logger
 from fastapi.responses import FileResponse
 
 from src.core.database.connection import get_db
-from src.app.apps.kanban2.services.project_attachment_service import AttachmentService
-from src.app.apps.kanban2.schemas.project_attachment import ProjectAttachmentResponse, ProjectAttachmentUpdate, AttachmentUploadForm
+from src.app.apps.kanban2.services.projects.project_attachment_service import AttachmentService
+from src.app.apps.kanban2.schemas.projects.project_attachment import ProjectAttachmentResponse, ProjectAttachmentUpdate, AttachmentUploadForm
 # Импортируем путь, который был определен в сервисе или вынесите его в конфиг
-from src.app.apps.kanban2.services.project_attachment_service import STORAGE_PATH 
+from src.app.apps.kanban2.services.projects.project_attachment_service import STORAGE_PATH 
 
 router = APIRouter(prefix="/projects/{project_id}/attachments", tags=["Attachments"])
 

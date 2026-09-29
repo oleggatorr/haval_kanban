@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update, delete
 
 from src.app.apps.kanban2.models.projects.ProjectAttachment import ProjectAttachment
-from src.app.apps.kanban2.schemas.project_attachment import ProjectAttachmentCreate, ProjectAttachmentUpdate
+from src.app.apps.kanban2.schemas.projects.project_attachment import ProjectAttachmentCreate, ProjectAttachmentUpdate
 from src.core.storage.local_storage import LocalFileStorage
 from loguru import logger
 

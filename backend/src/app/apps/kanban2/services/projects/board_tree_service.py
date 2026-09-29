@@ -3,12 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from typing import Optional
 
-from ..models.projects.Project import Project
-from ..models.tasks.TaskBoard import TaskBoard
-from ..models.tasks.TaskColumn import TaskColumn
-from ..models.tasks.Task import Task
-from ..models.tasks.SubTask import SubTask
-from ..schemas.tree2 import KanbanBoardResponse, BoardFlat, ColumnFlat, TaskFlat, SubtaskTree, UserSimple
+from ...models.projects.Project import Project
+from ...models.tasks.TaskBoard import TaskBoard
+from ...models.tasks.TaskColumn import TaskColumn
+from ...models.tasks.Task import Task
+from ...models.tasks.SubTask import SubTask
+from ...schemas.tree2 import KanbanBoardResponse, BoardFlat, ColumnFlat, TaskFlat, SubtaskTree, UserSimple
 
 
 class KanbanService:

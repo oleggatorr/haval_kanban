@@ -2,15 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.connection import get_db
-from ..schemas.project import (
+from ...schemas.projects.project import (
     ProjectCreate,
     ProjectUpdate,
     ProjectResponse,
     ProjectListResponse
 )
-from ..services.project_service import ProjectService
-from ..services.board_tree_service import KanbanService
-from ..schemas.tree import *
+from ...services.projects.project_service import ProjectService
+from ...services.projects.board_tree_service import KanbanService
+from ...schemas.tree import *
 
 
 router = APIRouter()

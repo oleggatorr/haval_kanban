@@ -5,8 +5,8 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models.tasks.TaskBoard import TaskBoard
-from ..schemas.task_board import TaskBoardCreate, TaskBoardUpdate
+from ...models.tasks.TaskBoard import TaskBoard
+from ...schemas.tasks.task_board import TaskBoardCreate, TaskBoardUpdate
 
 
 class TaskBoardService:

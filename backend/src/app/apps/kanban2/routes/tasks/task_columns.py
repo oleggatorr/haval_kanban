@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.connection import get_db
-from ..schemas.task_column import (
+from ...schemas.tasks.task_column import (
     TaskColumnCreate,
     TaskColumnUpdate,
     TaskColumnResponse,
     TaskColumnListResponse,
     TaskColumnReorderRequest
 )
-from ..services.task_column_service import TaskColumnService
+from ...services.tasks.task_column_service import TaskColumnService
 
 router = APIRouter()
 

@@ -5,11 +5,11 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models.tasks.Task import Task
-from ..models.tasks.TaskData import TaskData
-from ..models.tasks.TaskUser import TaskUser
+from ...models.tasks.Task import Task
+from ...models.tasks.TaskData import TaskData
+from ...models.tasks.TaskUser import TaskUser
 
-from ..schemas.task import TaskCreate, TaskUpdate
+from ...schemas.tasks.task import TaskCreate, TaskUpdate
 
 
 class TaskService:

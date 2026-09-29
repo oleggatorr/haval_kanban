@@ -5,9 +5,9 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from ..models.projects.Project import Project
-from ..models.projects.ProjectData import ProjectData
-from ..schemas.project import ProjectCreate, ProjectUpdate
+from ...models.projects.Project import Project
+from ...models.projects.ProjectData import ProjectData
+from ...schemas.projects.project import ProjectCreate, ProjectUpdate
 
 
 class ProjectService:

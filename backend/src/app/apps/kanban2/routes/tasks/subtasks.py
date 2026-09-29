@@ -2,11 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.connection import get_db
-from ..schemas.subtask import (
-    SubTaskCreate, SubTaskUpdate, SubTaskResponse, 
-    SubTaskListResponse, SubTaskReorderRequest
+from ...schemas.tasks.subtask import (
+    SubTaskCreate, SubTaskUpdate, SubTaskResponse,
+    SubTaskListResponse, SubTaskReorderRequest, SubTaskStatusUpdate,
 )
-from ..services.subtask_service import SubTaskService
+from ...services.tasks.subtask_service import SubTaskService
 
 router = APIRouter()
 
@@ -25,17 +25,6 @@ async def get_by_parent(
     return [SubTaskResponse.model_validate(i) for i in items]
 
 
-@router.get("/{subtask_id}", response_model=SubTaskResponse)
-async def get_one(
-    subtask_id: int,
-    svc: SubTaskService = Depends(get_svc)
-):
-    item = await svc.get_subtask_by_id(subtask_id)
-    if not item:
-        raise HTTPException(404, "Подзадача не найдена")
-    return SubTaskResponse.model_validate(item)
-
-
 @router.post("/", response_model=SubTaskResponse, status_code=201)
 async def create(
     data: SubTaskCreate,
@@ -46,18 +35,6 @@ async def create(
         return SubTaskResponse.model_validate(item)
     except Exception as e:
         raise HTTPException(400, str(e))
-
-
-@router.patch("/{subtask_id}", response_model=SubTaskResponse)
-async def patch(
-    subtask_id: int,
-    data: SubTaskUpdate,
-    svc: SubTaskService = Depends(get_svc)
-):
-    item = await svc.update_subtask(subtask_id, data)
-    if not item:
-        raise HTTPException(404, "Подзадача не найдена")
-    return SubTaskResponse.model_validate(item)
 
 
 @router.post("/reorder")
@@ -71,6 +48,46 @@ async def reorder(
         return {"message": "Порядок обновлен"}
     except ValueError as e:
         raise HTTPException(400, str(e))
+
+
+@router.patch("/{subtask_id}/status", response_model=SubTaskResponse)
+async def change_status(
+    subtask_id: int,
+    data: SubTaskStatusUpdate,
+    svc: SubTaskService = Depends(get_svc)
+):
+    """Сменить статус подзадачи."""
+    try:
+        item = await svc.change_status(subtask_id, data.status_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    if not item:
+        raise HTTPException(404, "Подзадача не найдена")
+    return SubTaskResponse.model_validate(item)
+
+
+@router.get("/{subtask_id}", response_model=SubTaskResponse)
+async def get_one(
+    subtask_id: int,
+    svc: SubTaskService = Depends(get_svc)
+):
+    item = await svc.get_subtask_by_id(subtask_id)
+    if not item:
+        raise HTTPException(404, "Подзадача не найдена")
+    return SubTaskResponse.model_validate(item)
+
+
+@router.patch("/{subtask_id}", response_model=SubTaskResponse)
+async def patch(
+    subtask_id: int,
+    data: SubTaskUpdate,
+    svc: SubTaskService = Depends(get_svc)
+):
+    item = await svc.update_subtask(subtask_id, data)
+    if not item:
+        raise HTTPException(404, "Подзадача не найдена")
+    return SubTaskResponse.model_validate(item)
 
 
 @router.delete("/{subtask_id}")
