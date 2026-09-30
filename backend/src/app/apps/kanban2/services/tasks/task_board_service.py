@@ -156,3 +156,28 @@ class TaskBoardService:
         await self.db.delete(board)
         await self.db.commit()
         return True
+    
+    async def touch_board(self, board_id: int) -> datetime:
+        """Отметить активность на доске (обновить last_activity_at и update_at).
+
+        Возвращает обновлённую доску или None, если доска не найдена.
+        """
+        board = await self.get_board_by_id(board_id)
+        if not board:
+            return None
+
+        board.touch()
+        await self.db.commit()
+        await self.db.refresh(board)
+        return board.last_activity_at
+    
+    async def get_last_activity_at(self, board_id: int) -> datetime:
+        """Отметить активность на доске (обновить last_activity_at и update_at).
+
+        Возвращает обновлённую доску или None, если доска не найдена.
+        """
+        board = await self.get_board_by_id(board_id)
+        if not board:
+            return None
+
+        return board.last_activity_at

@@ -34,7 +34,7 @@
       </div>
 
       <!-- Активный таб -->
-      <KanbanTab
+      <!-- <KanbanTab
         v-if="activeTab"
         :tab="activeTab"
         @create-column="handleCreateColumn"
@@ -47,7 +47,7 @@
         @task-moved="handleTaskMoved"
         @move-task="handleMoveTask"
       />
-    </div>
+    </div> -->
 
     <!-- Пустое состояние с кнопкой создания -->
     <div v-else class="empty-state">
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { useKanbanBoard } from '@/composables/useKanbanBoard'
-import KanbanTab from '@/components/kanban/KanbanTab.vue'
+// import KanbanTab from '@/components/kanban/KanbanTab.vue'
 import ActionButton from '@/components/ui/ActionButton.vue'
 
 const {

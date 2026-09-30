@@ -1,13 +1,13 @@
 // src/composables/useKanbanBoard.ts
 import { computed, ref, watch, onMounted, type Ref } from 'vue'
-import { useApi } from '@/composables/useApi' // Убедитесь, что путь совпадает с вашей структурой
+import { useApi } from '@/composables/useApi'
 import type { Board, Column, Task, Subtask, FullBoardResponse } from '@/types/taskboard'
 
 export function useKanbanBoard(projectId: number | string | Ref<number | string>) {
-  // Инициализируем API сразу с нужным типом ответа
+  // Инициализируем API для загрузки всей доски
   const api = useApi<FullBoardResponse>()
 
-  // Нормализуем projectId для работы и с ref, и с обычным значением
+  // Нормализуем projectId
   const getProjectId = () => {
     return typeof projectId === 'object' && 'value' in projectId ? projectId.value : projectId
   }
@@ -21,17 +21,14 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
 
   async function fetchBoard() {
     const currentId = getProjectId()
-
     if (!currentId || Number.isNaN(Number(currentId))) {
       console.warn('[useKanbanBoard] fetchBoard пропущен: некорректный projectId', currentId)
       return
     }
 
     try {
-      // Добавляем слэш в конце, чтобы соответствовать вашему рабочему запросу
+      // Эндпоинт остался прежним, так как он работал
       const path = `/project/${currentId}/full-board/`
-
-      // Вызываем get БЕЗ дженерика, тип уже задан в useApi<FullBoardResponse>()
       const data = await api.get(path)
 
       if (data) {
@@ -42,7 +39,6 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
       }
     } catch (e) {
       console.error('[useKanbanBoard] Ошибка загрузки доски:', e)
-      // Сбрасываем данные при ошибке
       board.value = null
       columns.value = []
       tasks.value = []
@@ -50,19 +46,19 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
     }
   }
 
-  // --- Мутации (исправлены для корректной работы с api) ---
+  // --- Мутации (Исправлены URL согласно документации API) ---
 
   async function createColumn(payload: { name: string; description?: string | null }) {
     if (!board.value?.id) throw new Error('Board not loaded')
 
-    // Для мутаций создаем отдельный инстанс или используем execute,
-    // чтобы не конфликтовать с типом FullBoardResponse основного инстанса
     const mutationApi = useApi<Column>()
-    const created = await mutationApi.post(`/board/${board.value.id}/columns/`, {
+    // Исправлен путь на /task_columns/ и добавлен board_id в тело запроса
+    const created = await mutationApi.post(`/task_columns/`, {
       name: payload.name,
-      description: payload.description ?? null,
+      description: payload.description ?? '',
       position: columns.value.length,
       flags: [],
+      board_id: board.value.id,
     })
 
     if (created) columns.value.push(created)
@@ -71,18 +67,22 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
 
   async function deleteColumn(columnId: number) {
     const mutationApi = useApi()
-    await mutationApi.del(`/columns/${columnId}/`)
+    // Предположительно удаление тоже идет через task_columns/{id}
+    await mutationApi.del(`/task_columns/${columnId}/`)
     columns.value = columns.value.filter((c) => c.id !== columnId)
     tasks.value = tasks.value.filter((t) => t.column_id !== columnId)
   }
 
   async function createTask(columnId: number, payload: Partial<Task>) {
     const mutationApi = useApi<Task>()
-    const created = await mutationApi.post(`/columns/${columnId}/tasks/`, {
+    // Исправлен путь на /task/
+    const created = await mutationApi.post(`/task/`, {
       name: payload.name ?? 'Новая задача',
-      description: payload.description ?? null,
+      description: payload.description ?? '',
       position: getTasksByColumn(columnId).length,
       status_id: payload.status_id ?? null,
+      column_id: columnId, // Обязательно указываем колонку
+      users: [],
       ...payload,
     })
 
@@ -92,14 +92,15 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
 
   async function deleteTask(taskId: number) {
     const mutationApi = useApi()
-    await mutationApi.del(`/tasks/${taskId}/`)
+    // Предположительно /task/{id}/
+    await mutationApi.del(`/task/${taskId}/`)
     tasks.value = tasks.value.filter((t) => t.id !== taskId)
     subtasks.value = subtasks.value.filter((s) => s.parent_task_id !== taskId)
   }
 
   async function updateTaskStatus(taskId: number, statusId: number | null) {
     const mutationApi = useApi<Task>()
-    const updated = await mutationApi.patch(`/tasks/${taskId}/`, { status_id: statusId })
+    const updated = await mutationApi.patch(`/task/${taskId}/`, { status_id: statusId })
     if (updated) {
       tasks.value = tasks.value.map((t) => (t.id === taskId ? updated : t))
     }
@@ -108,10 +109,13 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
 
   async function createSubtask(parentTaskId: number, payload: Partial<Subtask>) {
     const mutationApi = useApi<Subtask>()
-    const created = await mutationApi.post(`/tasks/${parentTaskId}/subtasks/`, {
+    // Исправлен путь на /subtasks/
+    const created = await mutationApi.post(`/subtasks/`, {
       name: payload.name ?? 'Новая подзадача',
-      description: payload.description ?? null,
+      description: payload.description ?? '',
       status_id: payload.status_id ?? null,
+      parent_task_id: parentTaskId,
+      users: [],
       ...payload,
     })
 
@@ -141,8 +145,9 @@ export function useKanbanBoard(projectId: number | string | Ref<number | string>
 
   async function toggleSubtaskStatus(subtaskId: number, isCompleted: boolean) {
     const mutationApi = useApi<Subtask>()
+    // Используем patch /subtasks/{id}/
     const updated = await mutationApi.patch(`/subtasks/${subtaskId}/`, {
-      status_id: isCompleted ? 3 : 1,
+      status_id: isCompleted ? 3 : 1, // Убедись, что ID статусов верные
       date_time_end: isCompleted ? new Date().toISOString() : null,
     })
 

@@ -20,10 +20,20 @@ class TaskBoard(Base):
     update_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     remove_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    last_activity_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-
+    last_activity_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=True
+    )
     
     # Связи
     project = relationship("Project", back_populates="task_board")
     columns = relationship("TaskColumn", back_populates="board", cascade="all, delete-orphan")
     board_users = relationship("TaskBoardUser", back_populates="board", cascade="all, delete-orphan")
+    
+    def touch(self) -> None:
+        """Обновить метку активности и update_at."""
+        now = datetime.now(timezone.utc)
+        self.last_activity_at = now
+        self.update_at = now

@@ -1,0 +1,111 @@
+<!-- components/modals/CreateColumnModal.vue -->
+<template>
+  <BaseModal v-model="isOpen" title="Добавить колонку" width="400px">
+    <form @submit.prevent="handleSave" class="column-form">
+      <div class="form-group">
+        <label>Название колонки</label>
+        <input
+          v-model="form.name"
+          class="input-field"
+          required
+          placeholder="Например: В работе"
+          autofocus
+        />
+      </div>
+    </form>
+
+    <template #footer>
+      <button type="button" class="btn btn-secondary" @click="isOpen = false">Отмена</button>
+      <button type="button" class="btn btn-primary" @click="handleSave">Создать</button>
+    </template>
+  </BaseModal>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, watch } from 'vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
+
+interface ColumnData {
+  name: string
+}
+
+const props = defineProps<{
+  modelValue: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: boolean]
+  save: [data: ColumnData]
+}>()
+
+const isOpen = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
+})
+
+const form = ref<ColumnData>({
+  name: '',
+})
+
+// Сбрасываем форму при открытии модалки
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    if (newVal) {
+      form.value = { name: '' }
+    }
+  },
+)
+
+const handleSave = () => {
+  if (!form.value.name.trim()) return
+
+  emit('save', { ...form.value })
+  isOpen.value = false
+}
+</script>
+
+<style scoped>
+.column-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4a5568;
+}
+.input-field {
+  padding: 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-field:focus {
+  border-color: #168be5;
+}
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  font-weight: 500;
+}
+.btn-primary {
+  background: #168be5;
+  color: white;
+}
+.btn-secondary {
+  background: #edf2f7;
+  color: #4a5568;
+}
+</style>

@@ -122,3 +122,33 @@ async def delete_board(
         raise HTTPException(status_code=404, detail="Доска задач не найдена")
     
     return {"message": "Доска задач успешно удалена"}
+
+
+@router.patch("/{board_id}/touch")
+async def patch_board(
+    board_id: int,
+    service: TaskBoardService = Depends(get_task_board_service)
+):
+    """Частично обновить доску задач."""
+    
+    result = await service.touch_board(board_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Доска задач не найдена")
+    
+    return result
+
+
+@router.get("/{board_id}/check_update")
+async def patch_board(
+    board_id: int,
+    service: TaskBoardService = Depends(get_task_board_service)
+):
+    """Частично обновить доску задач."""
+    
+    result = await service.get_last_activity_at(board_id)
+    
+    if not result:
+        raise HTTPException(status_code=404, detail="Доска задач не найдена")
+    
+    return result

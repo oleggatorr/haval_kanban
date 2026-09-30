@@ -23,72 +23,72 @@ const routes: RouteRecordRaw[] = [
       title: 'Главная',
     },
   },
-  {
-    path: '/projects',
-    name: 'projects',
-    component: () => import('@/views/private/kanban/projects/ListProgectsVue.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Проекты',
-    },
-  },
-  {
-    path: '/project/:id',
-    name: 'project',
-    component: () => import('@/views/private/kanban/projects/ProgectVue.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Проект',
-    },
-  },
-  {
-    path: '/project/:project_id/board',
-    name: 'project-board',
-    component: () => import('@/views/private/kanban/boards/KanbanBoard.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Доска проекта',
-    },
-  },
-  {
-    path: '/board/:project_id',
-    name: 'board',
-    component: () => import('@/components/layout/KanbanBoard.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан-доска',
-    },
-  },
+  // {
+  //   path: '/projects',
+  //   name: 'projects',
+  //   component: () => import('@/views/private/kanban/projects/ListProgectsVue.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Проекты',
+  //   },
+  // },
+  // {
+  //   path: '/project/:id',
+  //   name: 'project',
+  //   component: () => import('@/views/private/kanban/projects/ProgectVue.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Проект',
+  //   },
+  // },
+  // {
+  //   path: '/project/:project_id/board',
+  //   name: 'project-board',
+  //   component: () => import('@/views/private/kanban/boards/KanbanBoard.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Доска проекта',
+  //   },
+  // },
+  // {
+  //   path: '/board/:project_id',
+  //   name: 'board',
+  //   component: () => import('@/components/layout/KanbanBoard.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан-доска',
+  //   },
+  // },
 
-  {
-    path: '/profille',
-    name: 'user',
-    component: () => import('@/views/private/users/ProfileView.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан-user',
-    },
-  },
+  // {
+  //   path: '/profille',
+  //   name: 'user',
+  //   component: () => import('@/views/private/users/ProfileView.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан-user',
+  //   },
+  // },
 
-  {
-    path: '/test',
-    name: 'user',
-    component: () => import('@/views/private/kanban/test/test_board.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан-user',
-    },
-  },
+  // {
+  //   path: '/test',
+  //   name: 'user',
+  //   component: () => import('@/views/private/kanban/test/test_board.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан-user',
+  //   },
+  // },
 
-  {
-    path: '/test2',
-    name: 'user',
-    component: () => import('@/views/private/kanban/test/KanbanPage.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан-user',
-    },
-  },
+  // {
+  //   path: '/test2',
+  //   name: 'user',
+  //   component: () => import('@/views/private/kanban/test/KanbanPage.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан-user',
+  //   },
+  // },
 
   {
     path: '/test3/:id',
@@ -121,12 +121,32 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/printer/:projectId',
+    name: 'printer',
+    component: () => import('@/views/public/printer.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан проекта',
+    },
+  },
+  {
     path: '/test6',
     name: 'test6',
     component: () => import('@/views/test2/ListProjectsVue.vue'),
     meta: {
       requiresAuth: false,
       title: 'Канбан-user',
+    },
+  },
+  {
+    path: '/test_proj/:projectId',
+    name: 'test_proj',
+    component: () => import('@/views/test3/TaskBoardView.vue'),
+    props: true,
+    meta: {
+      requiresAuth: false,
+      title: 'Канбан проекта',
     },
   },
   {

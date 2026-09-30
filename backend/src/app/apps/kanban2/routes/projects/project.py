@@ -58,6 +58,19 @@ async def get_project(
     
     return ProjectResponse.model_validate(project)
 
+@router.get("/{project_id}/members")
+async def get_project(
+    project_id: int,
+    service: ProjectService = Depends(get_project_service)
+):
+    """Получить проект по ID."""
+    
+    project = await service.get_project_by_id(project_id)
+    
+    if not project:
+        raise HTTPException(status_code=404, detail="Проект не найден")
+    
+    return []
 
 @router.post("/", response_model=ProjectResponse, status_code=201)
 async def create_project(
