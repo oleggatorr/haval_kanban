@@ -13,7 +13,7 @@ class TaskColumn(Base):
     __tablename__ = "task_column"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    board_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_board.id"), nullable=False)
+    board_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_board.id", ondelete="CASCADE"), nullable=False)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     flags: Mapped[Optional[List[dict]]] = mapped_column(JSON, nullable=True)

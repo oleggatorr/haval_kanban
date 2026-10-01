@@ -14,15 +14,15 @@ const routes: RouteRecordRaw[] = [
       title: 'Вход',
     },
   },
-  {
-    path: '/',
-    name: 'home',
-    component: () => import('@/views/private/HomeView.vue'),
-    meta: {
-      requiresAuth: false,
-      title: 'Главная',
-    },
-  },
+  // {
+  //   path: '/',
+  //   name: 'home',
+  //   component: () => import('@/views/private/HomeView.vue'),
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Главная',
+  //   },
+  // },
   // {
   //   path: '/projects',
   //   name: 'projects',
@@ -91,7 +91,7 @@ const routes: RouteRecordRaw[] = [
   // },
 
   {
-    path: '/test3/:id',
+    path: '/project/:projectId',
     name: 'test3',
     component: () => import('@/views/test1/ProgectInfoVue.vue'),
     props: true,
@@ -100,16 +100,16 @@ const routes: RouteRecordRaw[] = [
       title: 'Проект',
     },
   },
-  {
-    path: '/test4/:id',
-    name: 'test4',
-    component: () => import('@/views/test2/TaskBoardView.vue'),
-    props: true,
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан проекта',
-    },
-  },
+  // {
+  //   path: '/test4/:id',
+  //   name: 'test4',
+  //   component: () => import('@/views/test2/TaskBoardView.vue'),
+  //   props: true,
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан проекта',
+  //   },
+  // },
   {
     path: '/test5/:id',
     name: 'test5',
@@ -120,18 +120,18 @@ const routes: RouteRecordRaw[] = [
       title: 'Канбан проекта',
     },
   },
+  // {
+  //   path: '/printer/:projectId',
+  //   name: 'printer',
+  //   component: () => import('@/views/public/printer.vue'),
+  //   props: true,
+  //   meta: {
+  //     requiresAuth: false,
+  //     title: 'Канбан проекта',
+  //   },
+  // },
   {
-    path: '/printer/:projectId',
-    name: 'printer',
-    component: () => import('@/views/public/printer.vue'),
-    props: true,
-    meta: {
-      requiresAuth: false,
-      title: 'Канбан проекта',
-    },
-  },
-  {
-    path: '/test6',
+    path: '/list',
     name: 'test6',
     component: () => import('@/views/test2/ListProjectsVue.vue'),
     meta: {
@@ -140,7 +140,7 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
-    path: '/test_proj/:projectId',
+    path: '/project/:projectId/board',
     name: 'test_proj',
     component: () => import('@/views/test3/TaskBoardView.vue'),
     props: true,

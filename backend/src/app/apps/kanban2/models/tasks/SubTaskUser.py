@@ -13,8 +13,8 @@ class SubTaskUser(Base):
     __tablename__ = "sab_task_users"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    sub_task_id: Mapped[int] = mapped_column(Integer, ForeignKey("sab_task.id"), nullable=False)
-    employee_id: Mapped[str] = mapped_column(String(10), ForeignKey("user_role.employee_id"), nullable=False)
+    sub_task_id: Mapped[int] = mapped_column(Integer, ForeignKey("sab_task.id", ondelete="CASCADE"), nullable=False)
+    employee_id: Mapped[str] = mapped_column(String(10), nullable=False)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     update_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), onupdate=lambda: datetime.now(timezone.utc))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
@@ -22,4 +22,4 @@ class SubTaskUser(Base):
     
     # Связи
     sub_task = relationship("SubTask", back_populates="users")
-    user = relationship("UserRole", backref="assigned_sub_tasks")
+    # user = relationship("UserRole", backref="assigned_sub_tasks")

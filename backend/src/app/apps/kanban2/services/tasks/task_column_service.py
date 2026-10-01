@@ -171,7 +171,7 @@ class TaskColumnService:
         column = await self.get_column_by_id(column_id)
         if not column:
             return False
-        
+
         column.is_active = False
         column.remove_at = datetime.now(timezone.utc)
         

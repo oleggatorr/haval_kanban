@@ -13,7 +13,7 @@ class Task(Base):
     __tablename__ = "task"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    column_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_column.id"), nullable=False)
+    column_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_column.id", ondelete="CASCADE"), nullable=False)
     status_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("task_status.id"), nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)

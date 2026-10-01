@@ -3,7 +3,7 @@
     <!-- HEADER -->
     <header class="page-header">
       <h1>Проекты</h1>
-      <button class="btn-primary" @click="$emit('create-project')">
+      <button class="btn-primary" @click="isCreateModalOpen = true">
         <Icon icon="solar:add-circle-outline" />
         Создать проект
       </button>
@@ -28,7 +28,7 @@
       <Icon icon="solar:folder-open-outline" class="empty-icon" />
       <h3>Проектов пока нет</h3>
       <p>Создайте первый проект, чтобы начать работу.</p>
-      <button class="btn-secondary" @click="$emit('create-project')">Создать проект</button>
+      <button class="btn-secondary" @click="isCreateModalOpen = true">Создать проект</button>
     </div>
 
     <!-- PROJECTS LIST (VERTICAL) -->
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Ссылка на доску проекта -->
-        <router-link :to="`/test3/${project.id}`" class="card-body-link">
+        <router-link :to="`/project/${project.id}`" class="card-body-link">
           <div class="card-body">
             <h3 class="project-title">{{ project.name }}</h3>
             <div class="project-id">ID: {{ project.id }}</div>
@@ -89,11 +89,53 @@
     <div v-if="total > 0 && !isLoading" class="pagination-info">
       Показано {{ projects.length }} из {{ total }} проектов
     </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО СОЗДАНИЯ ПРОЕКТА -->
+    <div v-if="isCreateModalOpen" class="modal-overlay" @click.self="closeModal">
+      <div class="modal">
+        <h3>Создать новый проект</h3>
+
+        <div class="form-group">
+          <label>Название проекта</label>
+          <input
+            v-model="newProjectName"
+            placeholder="Введите название..."
+            @keyup.enter="handleCreateProject"
+            ref="nameInput"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Описание (опционально)</label>
+          <textarea
+            v-model="newProjectDesc"
+            placeholder="Краткое описание целей проекта..."
+            rows="3"
+          ></textarea>
+        </div>
+
+        <div v-if="createError" class="error-message">
+          {{ createError }}
+        </div>
+
+        <div class="modal-actions">
+          <button @click="closeModal" :disabled="isCreating">Отмена</button>
+          <button
+            class="primary"
+            @click="handleCreateProject"
+            :disabled="isCreating || !newProjectName.trim()"
+          >
+            <span v-if="isCreating">Создание...</span>
+            <span v-else>Создать</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useApi } from '@/composables/useApi'
 
@@ -127,6 +169,7 @@ interface ProjectsResponse {
 
 // --- COMPOSABLE SETUP ---
 const api = useApi<ProjectsResponse>()
+const createApi = useApi<ProjectItem>() // Отдельный инстанс для создания
 
 // Локальные состояния для UI
 const projects = ref<ProjectItem[]>([])
@@ -134,8 +177,17 @@ const total = ref(0)
 const isLoading = ref(false)
 const localError = ref<string | null>(null)
 
+// Состояния модального окна
+const isCreateModalOpen = ref(false)
+const newProjectName = ref('')
+const newProjectDesc = ref('')
+const isCreating = ref(false)
+const createError = ref<string | null>(null)
+const nameInput = ref<HTMLInputElement | null>(null)
+
 // --- EMITS ---
-const emit = defineEmits(['create-project', 'edit-project', 'delete-project', 'open-project'])
+// Мы оставляем edit/delete для родителя, но create теперь обрабатываем здесь
+const emit = defineEmits(['edit-project', 'delete-project'])
 
 // --- METHODS ---
 async function fetchProjects() {
@@ -164,6 +216,51 @@ async function fetchProjects() {
   }
 }
 
+async function handleCreateProject() {
+  if (!newProjectName.value.trim()) return
+
+  isCreating.value = true
+  createError.value = null
+
+  try {
+    // Предполагаемый эндпоинт создания.
+    // Если ваш бэкенд ожидает другую структуру, поправьте тело запроса.
+    const payload = {
+      name: newProjectName.value.trim(),
+      data: {
+        big_description: newProjectDesc.value.trim() || null,
+      },
+    }
+
+    await createApi.post('/project/', payload)
+
+    // Успех: закрываем модалку, очищаем поля и перезагружаем список
+    closeModal()
+    await fetchProjects()
+  } catch (err: any) {
+    console.error('Create failed', err)
+    createError.value = err.response?.data?.detail || err.message || 'Ошибка при создании проекта'
+  } finally {
+    isCreating.value = false
+  }
+}
+
+function closeModal() {
+  isCreateModalOpen.value = false
+  newProjectName.value = ''
+  newProjectDesc.value = ''
+  createError.value = null
+}
+
+// Фокус на поле ввода при открытии модалки
+watch(isCreateModalOpen, (isOpen) => {
+  if (isOpen) {
+    nextTick(() => {
+      nameInput.value?.focus()
+    })
+  }
+})
+
 // Helpers
 function formatDate(dateString: string | null): string {
   if (!dateString) return '-'
@@ -191,9 +288,10 @@ defineExpose({ fetchProjects })
 </script>
 
 <style scoped>
+/* ... Ваши существующие стили ... */
 .projects-page {
   padding: 20px;
-  max-width: 900px; /* Уменьшил ширину для вертикального списка */
+  max-width: 900px;
   margin: 0 auto;
   font-family: 'Inter', sans-serif;
 }
@@ -227,6 +325,11 @@ defineExpose({ fetchProjects })
 
 .btn-primary:hover {
   background-color: #1d4ed8;
+}
+
+.btn-primary:disabled {
+  background-color: #93c5fd;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -313,7 +416,6 @@ defineExpose({ fetchProjects })
   color: #dc2626;
 }
 
-/* Стили для ссылки-карточки */
 .card-body-link {
   text-decoration: none;
   color: inherit;
@@ -363,7 +465,7 @@ defineExpose({ fetchProjects })
 }
 
 .card-footer {
-  padding: 12px 16px 0 16px; /* Убрал нижний паддинг, так как ссылка занимает все место */
+  padding: 12px 16px 0 16px;
   text-align: right;
 }
 
@@ -420,5 +522,125 @@ defineExpose({ fetchProjects })
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ==================== СТИЛИ МОДАЛЬНОГО ОКНА ==================== */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlide 0.2s ease-out;
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.modal input:focus,
+.modal textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.error-message {
+  color: #dc2626;
+  font-size: 13px;
+  margin-bottom: 12px;
+  background: #fef2f2;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.modal-actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.modal-actions button:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.modal-actions button.primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.modal-actions button.primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 </style>

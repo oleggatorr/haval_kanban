@@ -13,8 +13,8 @@ class TaskBoardUser(Base):
     __tablename__ = "task_board_users"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    board_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_board.id"), nullable=False)
-    employee_id: Mapped[str] = mapped_column(String(10), ForeignKey("user_role.employee_id"), nullable=False)
+    board_id: Mapped[int] = mapped_column(Integer, ForeignKey("task_board.id", ondelete="CASCADE"), nullable=False)
+    employee_id: Mapped[str] = mapped_column(String(10), nullable=False)
     position: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Изменено на Integer    name: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(String, nullable=False)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
@@ -24,4 +24,4 @@ class TaskBoardUser(Base):
     
     # Связи
     board = relationship("TaskBoard", back_populates="board_users")
-    user = relationship("UserRole", backref="task_board_memberships")
+    # user = relationship("UserRole", backref="task_board_memberships")

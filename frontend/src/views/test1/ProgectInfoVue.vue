@@ -1,292 +1,138 @@
 <template>
-  <div class="app">
-    <!-- LOADING STATE -->
-    <div v-if="isLoading" class="loading-overlay">
-      <Icon icon="solar:loader-outline" class="spinner" />
-      <span>Загрузка информации о проекте...</span>
-    </div>
+  <div class="project-page">
+    <!-- HEADER С НАВИГАЦИЕЙ -->
+    <header class="page-header">
+      <div class="header-left">
+        <router-link to="/list" class="back-link">
+          <Icon icon="solar:arrow-left-outline" />
+          <span>К списку проектов</span>
+        </router-link>
 
-    <!-- ERROR STATE -->
-    <div v-else-if="localError" class="error-state">
-      <Icon icon="solar:danger-triangle-outline" class="error-icon" />
-      <h3>Ошибка загрузки</h3>
-      <p>{{ localError }}</p>
-      <button class="btn-secondary" @click="fetchData">Попробовать снова</button>
-    </div>
+        <div v-if="loading" class="skeleton-title">Загрузка...</div>
+        <h1 v-else class="project-title">
+          {{ project?.name || 'Без названия' }}
+          <span v-if="project?.is_active" class="status-badge">Активен</span>
+        </h1>
+      </div>
 
-    <!-- MAIN CONTENT -->
-    <main v-else class="main">
-      <!-- TOPBAR -->
-      <header class="topbar">
-        <div class="search-wrap">
-          <Icon icon="solar:magnifer-outline"></Icon>
-          <input v-model="searchQuery" class="search" placeholder="Поиск задач, проектов..." />
+      <div class="header-actions">
+        <router-link :to="`/project/${projectId}/board`" class="btn-primary">
+          <Icon icon="solar:kanban-board-outline" />
+          Перейти к доске
+        </router-link>
+      </div>
+    </header>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main v-if="!loading && project" class="content-grid">
+      <!-- ЛЕВАЯ КОЛОНКА: ОПИСАНИЕ -->
+      <section class="card description-card">
+        <div class="card-header">
+          <h2>Описание проекта</h2>
+          <!-- Здесь можно добавить кнопку редактирования в будущем -->
         </div>
-        <button class="icon-btn" aria-label="Уведомления">
-          <Icon icon="solar:bell-outline"></Icon>
-        </button>
-        <button class="icon-btn" aria-label="Приложения">
-          <Icon icon="solar:widget-2-outline"></Icon>
-        </button>
-        <div class="profile">
-          <img src="https://ui-avatars.com/api/?name=User&background=random" alt="User" />
-        </div>
-      </header>
+        <div class="card-body">
+          <p v-if="project.data?.big_description" class="description-text">
+            {{ project.data.big_description }}
+          </p>
+          <p v-else class="text-muted">Описание отсутствует.</p>
 
-      <section class="content">
-        <!-- PROJECT HEADER -->
-        <div class="project-head">
-          <div>
-            <router-link to="/projects" class="crumb">
-              <Icon icon="solar:arrow-left-outline"></Icon>
-              Назад к проектам
-            </router-link>
-            <h1>
-              {{ projectData.title }}
-              <span class="status-badge" :class="{ active: projectData.isActive }">
-                {{ projectData.status }}
-              </span>
-            </h1>
-            <div class="subtitle">{{ projectData.subtitle }}</div>
-          </div>
-          <div class="head-actions">
-            <button class="btn" @click="$emit('edit')">
-              <Icon icon="solar:pen-outline"></Icon>
-              Редактировать
-            </button>
-            <button class="btn btn-more" aria-label="Дополнительно">
-              <Icon icon="solar:menu-dots-outline"></Icon>
-            </button>
-            <button class="btn primary" @click="$emit('add-task')">
-              <Icon icon="solar:add-circle-outline"></Icon>
-              Добавить задачу
-            </button>
-          </div>
-        </div>
-
-        <!-- META -->
-        <section class="project-meta">
-          <div v-for="item in projectMeta" :key="item.label" class="meta-item">
-            <Icon class="meta-icon" :icon="item.icon"></Icon>
-            <div class="meta-content">
-              <div class="meta-value">{{ item.value }}</div>
-              <div class="meta-label">{{ item.label }}</div>
+          <div class="meta-info">
+            <div class="meta-item">
+              <span class="label">ID Проекта:</span>
+              <span class="value">#{{ project.id }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Создан:</span>
+              <span class="value">{{ formatDate(project.create_at) }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">Обновлен:</span>
+              <span class="value">{{
+                project.update_at ? formatDate(project.update_at) : '—'
+              }}</span>
             </div>
           </div>
-        </section>
-
-        <!-- CONTENT GRID -->
-        <div class="content-grid">
-          <!-- LEFT -->
-          <div class="left-column">
-            <!-- DESCRIPTION -->
-            <section class="card">
-              <div class="card-header">
-                <div class="card-title">
-                  <Icon icon="solar:document-text-outline"></Icon>
-                  Описание проекта
-                </div>
-                <div class="card-edit" @click="$emit('edit-description')">
-                  <Icon icon="solar:pen-outline"></Icon>
-                  Редактировать
-                </div>
-              </div>
-              <div class="description">
-                <p>{{ projectData.description || 'Описание отсутствует' }}</p>
-              </div>
-            </section>
-
-            <!-- DOCUMENTATION / ATTACHMENTS -->
-            <section class="card">
-              <div class="card-header docs-header">
-                <div class="card-title">
-                  <Icon icon="solar:file-text-outline"></Icon>
-                  Документация и файлы
-                </div>
-                <button class="upload-btn" @click="$emit('upload')">
-                  <Icon icon="solar:upload-outline"></Icon>
-                  Загрузить файл
-                </button>
-              </div>
-
-              <div v-if="documents.length === 0" class="empty-docs">Нет прикрепленных файлов</div>
-
-              <div v-else class="documents">
-                <div class="doc-row header">
-                  <div>Название</div>
-                  <div>Тип</div>
-                  <div>Размер</div>
-                  <div class="hide-mobile">Дата загрузки</div>
-                  <div></div>
-                </div>
-                <div v-for="doc in documents" :key="doc.id" class="doc-row">
-                  <div class="doc-name">
-                    <div :class="['file-icon', getFileColorClass(doc.mime_type)]">
-                      <Icon :icon="getFileIcon(doc.mime_type)"></Icon>
-                    </div>
-                    <span>{{ doc.original_name }}</span>
-                  </div>
-                  <div class="doc-cell">{{ getShortType(doc.mime_type) }}</div>
-                  <div class="doc-cell">{{ formatFileSize(doc.file_size) }}</div>
-                  <div class="doc-cell hide-mobile">{{ formatDate(doc.created_at) }}</div>
-
-                  <!-- Кнопка скачивания -->
-                  <button
-                    class="download-btn"
-                    title="Скачать"
-                    @click="downloadFile(doc.id, doc.original_name)"
-                    :disabled="isDownloading === doc.id"
-                  >
-                    <Icon
-                      :icon="
-                        isDownloading === doc.id ? 'solar:loader-outline' : 'solar:download-outline'
-                      "
-                      :class="{ spinning: isDownloading === doc.id }"
-                    ></Icon>
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <!-- COSTS -->
-            <section class="card">
-              <div class="card-header">
-                <div class="card-title">
-                  <Icon icon="solar:wallet-money-outline"></Icon>
-                  Затраты
-                </div>
-                <div class="card-edit" @click="$emit('edit-costs')">
-                  <Icon icon="solar:pen-outline"></Icon>
-                  Редактировать
-                </div>
-              </div>
-              <div class="costs-content">
-                <div class="total-cost">
-                  <div class="total-label">Общие затраты</div>
-                  <div class="total-value">{{ formatMoney(totalCost) }}</div>
-                </div>
-                <div class="cost-chart">
-                  <div class="bar">
-                    <div
-                      v-for="cost in costs"
-                      :key="cost.name"
-                      class="bar-part"
-                      :class="cost.barClass"
-                    ></div>
-                  </div>
-                  <div class="cost-list">
-                    <div v-for="cost in costs" :key="cost.name" class="cost-row">
-                      <div class="cost-name">
-                        <span class="cost-dot" :class="cost.dotClass"></span>
-                        {{ cost.name }}
-                      </div>
-                      <div class="cost-amount">{{ formatMoney(cost.amount) }}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-
-          <!-- RIGHT -->
-          <aside class="right-column">
-            <!-- DEADLINE & STATUS -->
-            <section class="card right-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <Icon icon="solar:calendar-outline"></Icon>
-                  Сроки и статус
-                </div>
-              </div>
-              <div class="deadline-content">
-                <div class="progress-top">
-                  <div class="progress" style="width: 100%">
-                    <div
-                      class="progress-value"
-                      :style="{ width: projectData.progress + '%' }"
-                    ></div>
-                  </div>
-                </div>
-                <div class="progress-percent-wrap">
-                  <span class="progress-percent">{{ projectData.progress }}%</span>
-                </div>
-                <div class="deadline-info">
-                  <div class="deadline-item">
-                    <div class="deadline-label">Создан</div>
-                    <div class="deadline-value">{{ formatDate(projectData.create_at) }}</div>
-                  </div>
-                  <div class="deadline-item">
-                    <div class="deadline-label">Обновлен</div>
-                    <div class="deadline-value">{{ formatDate(projectData.update_at) }}</div>
-                  </div>
-                  <div class="deadline-item">
-                    <div class="deadline-label">Статус</div>
-                    <div class="deadline-value">
-                      {{ projectData.isActive ? 'Активен' : 'Архив' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- QUICK ACTIONS -->
-            <section class="card right-card">
-              <div class="card-header">
-                <div class="card-title">
-                  <Icon icon="solar:bolt-outline"></Icon>
-                  Быстрые действия
-                </div>
-              </div>
-              <div class="quick-list">
-                <div
-                  v-for="action in quickActions"
-                  :key="action.label"
-                  class="quick-item"
-                  @click="$emit(action.event)"
-                >
-                  <Icon :icon="action.icon"></Icon>
-                  {{ action.label }}
-                  <Icon class="quick-arrow" icon="solar:alt-arrow-right-outline"></Icon>
-                </div>
-              </div>
-            </section>
-          </aside>
         </div>
       </section>
+
+      <!-- ПРАВАЯ КОЛОНКА: ФАЙЛЫ -->
+      <aside class="files-sidebar">
+        <div class="card files-card">
+          <div class="card-header">
+            <h2>Документы</h2>
+            <span class="count-badge">{{ documents.length }}</span>
+          </div>
+
+          <div v-if="loadingDocs" class="loading-small">Загрузка файлов...</div>
+
+          <div v-else-if="documents.length === 0" class="empty-files">
+            <Icon icon="solar:folder-open-outline" class="empty-icon" />
+            <p>Нет загруженных файлов</p>
+          </div>
+
+          <div v-else class="file-list">
+            <div v-for="doc in documents" :key="doc.id" class="file-item">
+              <div class="file-icon-wrapper" :class="getFileColor(doc.mime_type)">
+                <Icon :icon="getFileIcon(doc.mime_type)" />
+              </div>
+              <div class="file-info">
+                <div class="file-name" :title="doc.original_name">{{ doc.original_name }}</div>
+                <div class="file-meta">
+                  {{ formatFileSize(doc.file_size) }} • {{ formatDate(doc.created_at) }}
+                </div>
+              </div>
+              <a
+                :href="`/api/files/${doc.stored_name}`"
+                target="_blank"
+                class="file-download-btn"
+                title="Скачать"
+              >
+                <Icon icon="solar:download-outline" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </aside>
     </main>
+
+    <!-- Состояние загрузки всей страницы -->
+    <div v-else-if="loading" class="full-loader">
+      <Icon icon="solar:loader-outline" class="spinner" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useApi } from '@/composables/useApi'
-import axios from 'axios' // Импортируем axios напрямую для blob-запросов
-import '@/assets/styles/ProgectInfoVue.css'
+import { useRoute } from 'vue-router'
 
-// --- TYPES ---
-interface ProjectResponse {
+// --- Типы данных (согласно вашему JSON) ---
+interface ProjectData {
+  big_description: string | null
+  id: number
+  project_id: number
+  create_at: string
+  update_at: string | null
+  is_active: boolean
+  remove_at: string | null
+}
+
+interface Project {
   name: string
   id: number
   create_at: string
   update_at: string | null
   is_active: boolean
   remove_at: string | null
-  data: {
-    big_description: string | null
-    id: number
-    project_id: number
-    create_at: string
-    update_at: string | null
-    is_active: boolean
-    remove_at: string | null
-  }
+  data: ProjectData | null
 }
 
-interface Attachment {
+interface ProjectFile {
   original_name: string
-  file_metadata: any
+  file_metadata: Record<string, any>
   id: number
   project_id: number
   stored_name: string
@@ -295,378 +141,360 @@ interface Attachment {
   created_at: string
 }
 
-// --- SETUP ---
+// --- Setup ---
 const route = useRoute()
-const projectId = route.params.id as string
+const projectId = Number(route.params.projectId) // Берем ID из URL
 
-const projectApi = useApi<ProjectResponse>()
-const attachmentsApi = useApi<Attachment[]>()
+const project = ref<Project | null>(null)
+const documents = ref<ProjectFile[]>([])
+const loading = ref(true)
+const loadingDocs = ref(false)
 
-const isLoading = ref(false)
-const localError = ref<string | null>(null)
-const searchQuery = ref('')
-const isDownloading = ref<number | null>(null) // ID файла, который сейчас скачивается
+const projectApi = useApi<Project>()
+const filesApi = useApi<ProjectFile[]>()
 
-const projectRaw = ref<ProjectResponse | null>(null)
-const attachments = ref<Attachment[]>([])
+// --- Методы ---
 
-// Computed Project Data
-const projectData = computed(() => {
-  if (!projectRaw.value)
-    return {
-      title: '',
-      status: '',
-      subtitle: '',
-      description: '',
-      startDate: '-',
-      endDate: '-',
-      daysLeft: 0,
-      progress: 0,
-      isActive: false,
-      create_at: '',
-      update_at: '',
-    }
-
-  const p = projectRaw.value
-  return {
-    title: p.name,
-    status: p.is_active ? 'В работе' : 'Завершен',
-    subtitle: `ID проекта: ${p.id}`,
-    description: p.data?.big_description || 'Нет подробного описания',
-    startDate: formatDate(p.create_at),
-    endDate: '-',
-    daysLeft: 0,
-    progress: 35,
-    isActive: p.is_active,
-    create_at: p.create_at,
-    update_at: p.update_at,
-  }
-})
-
-const projectMeta = computed(() => [
-  {
-    icon: 'solar:calendar-outline',
-    value: `${projectData.value.startDate} – ${projectData.value.endDate}`,
-    label: 'Срок выполнения',
-  },
-  {
-    icon: 'solar:database-outline',
-    value: formatMoney(totalCost.value),
-    label: 'Затраты на разработку',
-  },
-  { icon: 'solar:users-group-rounded-outline', value: '5', label: 'Исполнители' },
-  { icon: 'solar:user-outline', value: 'Не указан', label: 'Инициатор' },
-  { icon: 'solar:user-check-outline', value: 'Не указан', label: 'Менеджер проекта' },
-])
-
-const documents = computed(() =>
-  attachments.value.map((att) => ({
-    ...att,
-    type: getShortType(att.mime_type),
-    uploadedAt: formatDate(att.created_at),
-    author: 'Система',
-  })),
-)
-
-const costs = [
-  { name: 'Разработка', amount: 1_850_000, barClass: 'bar-development', dotClass: 'dot-blue' },
-  { name: 'Тестирование', amount: 450_000, barClass: 'bar-testing', dotClass: 'dot-green' },
-  { name: 'Внедрение', amount: 250_000, barClass: 'bar-implementation', dotClass: 'dot-green2' },
-  { name: 'Прочее', amount: 102_000, barClass: 'bar-other', dotClass: 'dot-purple' },
-]
-const totalCost = computed(() => costs.reduce((sum, c) => sum + c.amount, 0))
-
-const quickActions = [
-  { icon: 'solar:refresh-outline', label: 'Изменить статус проекта', event: 'change-status' },
-  { icon: 'solar:add-circle-outline', label: 'Добавить задачу', event: 'add-task' },
-  { icon: 'solar:upload-outline', label: 'Загрузить документацию', event: 'upload-docs' },
-  { icon: 'solar:wallet-money-outline', label: 'Добавить затраты', event: 'add-cost' },
-]
-
-// --- METHODS ---
-
-async function fetchData() {
-  isLoading.value = true
-  localError.value = null
-
+async function loadData() {
   try {
-    const projectRes = await projectApi.get(`/project/${projectId}/`)
-    if (projectRes) {
-      projectRaw.value = projectRes
-    }
+    // Параллельная загрузка для скорости
+    const [projData, docsData] = await Promise.all([
+      projectApi.get(`/project/${projectId}`),
+      filesApi.get(`/projects/${projectId}/attachments/`),
+    ])
 
-    const attachRes = await attachmentsApi.get(`/projects/${projectId}/attachments/`)
-    if (attachRes) {
-      attachments.value = attachRes
-    }
-  } catch (err: any) {
-    console.error(err)
-    localError.value = err.message || 'Ошибка загрузки данных'
+    if (projData) project.value = projData
+    if (docsData) documents.value = docsData
+  } catch (e) {
+    console.error('Ошибка загрузки:', e)
   } finally {
-    isLoading.value = false
+    loading.value = false
+    loadingDocs.value = false
   }
 }
 
-// Функция скачивания файла
-async function downloadFile(attachmentId: number, fileName: string) {
-  isDownloading.value = attachmentId
-  try {
-    // Используем прямой вызов axios для получения blob, так как useApi может быть настроен на JSON
-    const response = await axios.get(
-      `/projects/${projectId}/attachments/${attachmentId}/download`,
-      {
-        responseType: 'blob',
-        // Если нужен токен авторизации, он должен быть добавлен интерцептором httpClient
-        // или вручную через headers, если httpClient экспортирует instance
-      },
-    )
-
-    // Создаем ссылку для скачивания
-    const url = window.URL.createObjectURL(new Blob([response.data]))
-    const link = document.createElement('a')
-    link.href = url
-    link.setAttribute('download', fileName)
-    document.body.appendChild(link)
-    link.click()
-
-    // Очистка
-    link.remove()
-    window.URL.revokeObjectURL(url)
-  } catch (err) {
-    console.error('Ошибка скачивания:', err)
-    alert('Не удалось скачать файл')
-  } finally {
-    isDownloading.value = null
-  }
-}
-
-// Helpers
+// Форматирование даты
 function formatDate(dateString: string | null): string {
-  if (!dateString) return '-'
-  const date = new Date(dateString)
-  return new Intl.DateTimeFormat('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
+  if (!dateString) return '—'
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'long',
     year: 'numeric',
-  }).format(date)
+  })
 }
 
-function formatMoney(value: number): string {
-  return new Intl.NumberFormat('ru-RU').format(value) + ' ₽'
-}
-
+// Размер файла
 function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Б'
+  if (!bytes) return '0 Б'
   const k = 1024
   const sizes = ['Б', 'КБ', 'МБ', 'ГБ']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
 
-function getShortType(mime: string): string {
-  if (mime.includes('pdf')) return 'PDF'
-  if (mime.includes('word') || mime.includes('document')) return 'DOC'
-  if (mime.includes('excel') || mime.includes('sheet')) return 'XLS'
-  if (mime.includes('image')) return 'IMG'
-  if (mime.includes('zip') || mime.includes('rar') || mime.includes('archive')) return 'ARCH'
-  if (mime.includes('text')) return 'TXT'
-  return 'FILE'
-}
-
+// Иконки для файлов
 function getFileIcon(mime: string): string {
-  if (mime.includes('pdf')) return 'solar:file-pdf-outline'
-  if (mime.includes('word') || mime.includes('document')) return 'solar:file-word-outline'
-  if (mime.includes('excel') || mime.includes('sheet')) return 'solar:file-excel-outline'
-  if (mime.includes('image')) return 'solar:file-image-outline'
-  if (mime.includes('zip') || mime.includes('rar') || mime.includes('7z'))
-    return 'solar:archive-outline'
-  if (mime.includes('text')) return 'solar:file-text-outline'
-  return 'solar:file-text-outline'
+  if (mime.includes('pdf')) return 'solar:file-text-outline'
+  if (mime.includes('image')) return 'solar:image-outline'
+  if (mime.includes('word') || mime.includes('document')) return 'solar:file-text-outline'
+  if (mime.includes('excel') || mime.includes('sheet')) return 'solar:table-outline'
+  return 'solar:file-outline'
 }
 
-function getFileColorClass(mime: string): string {
-  if (mime.includes('pdf')) return 'file-pdf-color'
-  if (mime.includes('word') || mime.includes('document')) return 'file-word-color'
-  if (mime.includes('excel') || mime.includes('sheet')) return 'file-excel-color'
-  if (mime.includes('image')) return 'file-image-color'
-  if (mime.includes('zip') || mime.includes('rar')) return 'file-archive-color'
-  return 'file-default-color'
+function getFileColor(mime: string): string {
+  if (mime.includes('pdf')) return 'color-red'
+  if (mime.includes('image')) return 'color-blue'
+  if (mime.includes('word') || mime.includes('document')) return 'color-blue-dark'
+  if (mime.includes('excel')) return 'color-green'
+  return 'color-gray'
 }
-
-defineEmits([
-  'edit',
-  'edit-description',
-  'edit-costs',
-  'add-task',
-  'add-member',
-  'upload',
-  'change-status',
-  'upload-docs',
-  'add-cost',
-])
 
 onMounted(() => {
-  fetchData()
+  loadData()
 })
 </script>
 
 <style scoped>
-/* Локальные стили для цветов иконок файлов */
-.file-icon {
+.project-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+/* Header */
+.page-header {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  margin-right: 12px;
-  font-size: 20px;
-  background: #f3f4f6; /* Default bg */
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1.5rem;
 }
 
-/* Цвета иконок */
-.file-pdf-color {
-  color: #dc2626;
-  background: #fee2e2;
-}
-.file-word-color {
-  color: #2563eb;
-  background: #dbeafe;
-}
-.file-excel-color {
-  color: #16a34a;
-  background: #dcfce7;
-}
-.file-image-color {
-  color: #9333ea;
-  background: #f3e8ff;
-}
-.file-archive-color {
-  color: #d97706;
-  background: #fef3c7;
-}
-.file-default-color {
-  color: #4b5563;
-  background: #f3f4f6;
-}
-
-/* Остальные стили */
-.loading-overlay,
-.error-state {
+.header-left {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  color: #6b7280;
+  gap: 0.5rem;
 }
-.spinner {
-  font-size: 48px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #64748b;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
   color: #2563eb;
 }
-.error-icon {
-  font-size: 48px;
-  color: #ef4444;
-  margin-bottom: 16px;
-}
-.btn-secondary {
-  margin-top: 16px;
-  padding: 8px 16px;
-  background: #f3f4f6;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  cursor: pointer;
+
+.project-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .status-badge {
-  font-size: 11px;
-  background: #e7f5ff;
-  color: #168be5;
-  padding: 5px 9px;
-  border-radius: 20px;
-  vertical-align: middle;
-  margin-left: 8px;
-}
-.status-badge.active {
+  font-size: 0.75rem;
   background: #dcfce7;
   color: #166534;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-.progress-percent-wrap {
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Grid Layout */
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
   display: flex;
-  justify-content: flex-end;
-  margin-top: -25px;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.empty-docs {
-  padding: 20px;
-  text-align: center;
-  color: #9ca3af;
+.card-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #334155;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+/* Description */
+.description-text {
+  line-height: 1.6;
+  color: #475569;
+  white-space: pre-wrap; /* Сохраняет переносы строк */
+  margin-bottom: 2rem;
+}
+
+.text-muted {
+  color: #94a3b8;
   font-style: italic;
 }
 
-.doc-row.header {
-  font-weight: 600;
-  color: #374151;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 8px;
-  margin-bottom: 8px;
+.meta-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
 }
 
-.doc-row {
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.meta-item .label {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.meta-item .value {
+  font-size: 0.95rem;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* Files Sidebar */
+.count-badge {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-item {
   display: flex;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f3f4f6;
+  gap: 12px;
+  padding: 12px 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
 }
-.doc-row:last-child {
+
+.file-item:last-child {
   border-bottom: none;
 }
-.doc-name {
-  display: flex;
-  align-items: center;
-  flex: 2;
-  min-width: 200px;
-}
-.doc-cell {
-  flex: 1;
-  color: #6b7280;
-  font-size: 13px;
+
+.file-item:hover {
+  background: #f8fafc;
 }
 
-.download-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 4px;
-  color: #6b7280;
+.file-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.color-red {
+  background: #fee2e2;
+  color: #ef4444;
+}
+.color-blue {
+  background: #e0f2fe;
+  color: #0ea5e9;
+}
+.color-blue-dark {
+  background: #dbeafe;
+  color: #2563eb;
+}
+.color-green {
+  background: #dcfce7;
+  color: #22c55e;
+}
+.color-gray {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.file-info {
+  flex: 1;
+  overflow: hidden;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.file-download-btn {
+  color: #94a3b8;
+  padding: 6px;
+  border-radius: 6px;
   transition: all 0.2s;
 }
 
-.download-btn:hover:not(:disabled) {
-  background: #e5e7eb;
+.file-download-btn:hover {
+  background: #e2e8f0;
   color: #2563eb;
 }
 
-.download-btn:disabled {
-  opacity: 0.5;
-  cursor: wait;
+.empty-files {
+  padding: 2rem;
+  text-align: center;
+  color: #94a3b8;
 }
 
-.spinning {
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  opacity: 0.5;
+}
+
+.loading-small {
+  padding: 1rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.full-loader {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinner {
+  font-size: 2rem;
+  color: #2563eb;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
   to {
     transform: rotate(360deg);
   }

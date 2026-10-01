@@ -14,7 +14,7 @@ class SubTask(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     parent_task_id: Mapped[int] = mapped_column(Integer, ForeignKey("task.id"), nullable=False)
-    status_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("task_status.id"), nullable=True)
+    status_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("task_status.id", ondelete="CASCADE"), nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     position: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # Изменено на Integer    name: Mapped[str] = mapped_column(String, nullable=False)

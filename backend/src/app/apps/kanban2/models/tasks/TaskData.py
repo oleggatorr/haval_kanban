@@ -13,7 +13,7 @@ class TaskData(Base):
     __tablename__ = "task_data"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("task.id"), unique=True, nullable=False)
+    task_id: Mapped[int] = mapped_column(Integer, ForeignKey("task.id", ondelete="CASCADE"), unique=True, nullable=False)
     owner_id: Mapped[str] = mapped_column(String(10), ForeignKey("user_role.employee_id"), nullable=False)
     big_description: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     create_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)

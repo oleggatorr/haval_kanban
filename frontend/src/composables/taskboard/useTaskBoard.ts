@@ -67,10 +67,19 @@ export function useTaskBoard(projectId: number | string | Ref<number | string>) 
 
   async function deleteColumn(columnId: number) {
     const mutationApi = useApi()
-    // Предположительно удаление тоже идет через task_columns/{id}
-    await mutationApi.del(`/task_columns/${columnId}/`)
-    columns.value = columns.value.filter((c) => c.id !== columnId)
-    tasks.value = tasks.value.filter((t) => t.column_id !== columnId)
+
+    try {
+      // Передаем {hard: true} внутри объекта params
+      await mutationApi.del(`/task_columns/${columnId}/`, {
+        params: { hard: true },
+      })
+
+      // Обновляем локальное состояние только после успешного ответа
+      columns.value = columns.value.filter((c) => c.id !== columnId)
+      tasks.value = tasks.value.filter((t) => t.column_id !== columnId)
+    } catch (e) {
+      console.error('Ошибка при удалении колонки:', e)
+    }
   }
 
   async function createTask(columnId: number, payload: Partial<Task>) {
@@ -166,6 +175,43 @@ export function useTaskBoard(projectId: number | string | Ref<number | string>) 
     return updated
   }
 
+  async function updateBoard(payload: Partial<Board>) {
+    if (!board.value?.id) return
+    const mutationApi = useApi<Board>()
+    const updated = await mutationApi.patch(`/boards/${board.value.id}/`, payload)
+    if (updated) board.value = { ...board.value, ...updated }
+    return updated
+  }
+
+  async function updateColumn(payload: Partial<Column> & { id: number }) {
+    const { id, ...rest } = payload
+    const mutationApi = useApi<Column>()
+    const updated = await mutationApi.patch(`/task_columns/${id}/`, rest)
+    if (updated) {
+      columns.value = columns.value.map((c) => (c.id === id ? updated : c))
+    }
+    return updated
+  }
+
+  async function updateTask(payload: Partial<Task> & { id: number }) {
+    const { id, ...rest } = payload
+    const mutationApi = useApi<Task>()
+    const updated = await mutationApi.patch(`/task/${id}/`, rest)
+    if (updated) {
+      tasks.value = tasks.value.map((t) => (t.id === id ? updated : t))
+    }
+    return updated
+  }
+
+  async function updateSubtask(payload: Partial<Subtask> & { id: number }) {
+    const { id, ...rest } = payload
+    const mutationApi = useApi<Subtask>()
+    const updated = await mutationApi.patch(`/subtasks/${id}/`, rest)
+    if (updated) {
+      subtasks.value = subtasks.value.map((s) => (s.id === id ? updated : s))
+    }
+    return updated
+  }
   // --- Утилиты ---
   function getSubtasksByTask(taskId: number): Subtask[] {
     return subtasks.value.filter((s) => s.parent_task_id === taskId)
@@ -205,5 +251,9 @@ export function useTaskBoard(projectId: number | string | Ref<number | string>) 
     createSubtask,
     deleteSubtask,
     toggleSubtaskStatus,
+    updateBoard,
+    updateColumn,
+    updateTask,
+    updateSubtask,
   }
 }

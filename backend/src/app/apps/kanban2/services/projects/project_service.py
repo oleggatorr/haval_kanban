@@ -87,6 +87,10 @@ class ProjectService:
         # Загружаем связанные данные
         await self.db.refresh(project, ['data'])
         
+        from ..tasks.task_board_service import TaskBoardService, TaskBoardCreate
+        taskBoardService = TaskBoardService(db_session= self.db)
+        res = await taskBoardService.create_board(TaskBoardCreate(name=project.name,description="", project_id= project.id))
+        print(res)
         return project
     
     async def update_project(
