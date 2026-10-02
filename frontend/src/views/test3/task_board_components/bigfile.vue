@@ -178,6 +178,7 @@
     </div>
 
     <!-- Создание/Редактирование Задачи -->
+    <!-- Создание/Редактирование Задачи -->
     <div
       v-if="isCreateTaskOpen || isEditTaskModalOpen"
       class="modal-overlay"
@@ -189,15 +190,25 @@
         <div class="form-grid">
           <div class="form-group full">
             <label>Название</label>
-            <input v-model="editTaskName" placeholder="Название задачи" />
+            <!-- ИСПРАВЛЕНО: Используем newTaskName для создания и editTaskName для редактирования -->
+            <input v-if="isCreateTaskOpen" v-model="newTaskName" placeholder="Название задачи" />
+            <input v-else v-model="editTaskName" placeholder="Название задачи" />
           </div>
 
           <div class="form-group full">
             <label>Описание</label>
-            <textarea v-model="editTaskDescription" placeholder="Описание"></textarea>
+            <!-- ИСПРАВЛЕНО: То же самое для описания -->
+            <textarea
+              v-if="isCreateTaskOpen"
+              v-model="newTaskDescription"
+              placeholder="Описание"
+            ></textarea>
+            <textarea v-else v-model="editTaskDescription" placeholder="Описание"></textarea>
           </div>
 
-          <div class="form-group">
+          <!-- Остальные поля (Статус, Даты) пока оставляем как есть, 
+               они используются только при редактировании, но можно и их разделить -->
+          <div v-if="!isCreateTaskOpen" class="form-group">
             <label>Статус</label>
             <select v-model="editTaskStatusId">
               <option :value="null">Без статуса</option>
@@ -205,12 +216,12 @@
             </select>
           </div>
 
-          <div class="form-group">
+          <div v-if="!isCreateTaskOpen" class="form-group">
             <label>План. начало</label>
             <input type="datetime-local" v-model="editTaskPlanStart" />
           </div>
 
-          <div class="form-group">
+          <div v-if="!isCreateTaskOpen" class="form-group">
             <label>План. конец</label>
             <input type="datetime-local" v-model="editTaskPlanEnd" />
           </div>
@@ -229,7 +240,7 @@
             class="primary"
             @click="isCreateTaskOpen ? handleCreateTask() : handleUpdateTask()"
           >
-            Сохранить
+            {{ isCreateTaskOpen ? 'Создать' : 'Сохранить' }}
           </button>
         </div>
       </div>
@@ -555,6 +566,7 @@ const handleUpdateBoard = () => {
 // --- Задачи ---
 
 const openCreateTask = (columnId: number) => {
+  console.log('Открываем создание задачи для колонки:', columnId)
   activeColumnId.value = columnId
   newTaskName.value = ''
   newTaskDescription.value = ''
@@ -568,14 +580,31 @@ const closeTaskModal = () => {
 }
 
 const handleCreateTask = () => {
-  if (!activeColumnId.value || !newTaskName.value.trim()) return
+  // Принудительно убираем пробелы по краям
+  const name = newTaskName.value?.trim()
+
+  console.log('Проверка перед созданием:')
+  console.log('- ID Колонки:', activeColumnId.value)
+  console.log('- Имя задачи:', `[${name}]`) // Квадратные скобки покажут скрытые пробелы
+
+  if (!activeColumnId.value) {
+    alert('Ошибка: Не выбрана колонка!')
+    return
+  }
+
+  if (!name) {
+    alert('Введите название задачи!')
+    return
+  }
+
   emit('create-task', {
     columnId: activeColumnId.value,
     data: {
-      name: newTaskName.value.trim(),
-      description: newTaskDescription.value.trim() || '',
+      name: name,
+      description: newTaskDescription.value?.trim() || '',
     },
   })
+
   closeTaskModal()
 }
 
